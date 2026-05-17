@@ -1,277 +1,264 @@
 # PDF Tools Pro
 
-A professional Flutter application for PDF conversion and management with a beautiful, responsive UI and comprehensive file handling capabilities.
+A cross-platform Flutter app for converting and managing PDFs on your device. Convert between PDF, Office formats, images, and plain text with a Material Design 3 UI, dark mode, conversion history, and batch workflows.
 
-## Features
-
-### From PDF Conversions
-- ✅ **PDF to Word** - Convert PDF to editable Word documents
-- ✅ **PDF to Excel** - Extract tables and data to Excel spreadsheets
-- ✅ **PDF to PowerPoint** - Convert PDF to presentations
-- ✅ **PDF to Image** - Convert PDF pages to high-quality images (PNG, JPG)
-- ✅ **PDF to Text** - Extract all text content from PDFs
-- ⚠️ **PDF to HTML** - Convert PDF to web pages (Coming Soon)
-- ⚠️ **PDF to EPUB** - Convert PDF to eBook format (Coming Soon)
-
-### To PDF Conversions
-- ✅ **Image to PDF** - Convert images to PDF documents
-- ✅ **Word to PDF** - Convert Word documents to PDF
-- ⚠️ **Excel to PDF** - Convert spreadsheets to PDF (Coming Soon)
-- ⚠️ **PowerPoint to PDF** - Convert presentations to PDF (Coming Soon)
-- ✅ **Text to PDF** - Convert plain text files to PDF
-
-### UI/UX Features
-- 🎨 **Material Design 3** - Modern, beautiful interface
-- 🌓 **Dark Mode** - Full dark theme support
-- 📱 **Responsive Design** - Works on mobile, tablet, and desktop
-- ⚡ **Smooth Animations** - Delightful user interactions
-- 🎯 **Intuitive Navigation** - Easy-to-use interface
-- 📊 **Progress Tracking** - Real-time conversion progress
-- 💾 **File Management** - Download, share, and open converted files
-
-## Screenshots
-
-_Screenshots will be added here_
-
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK (3.10.3 or higher)
-- Dart SDK (3.10.3 or higher)
-- Android Studio / VS Code with Flutter extensions
-- Android SDK (for Android development)
-- Xcode (for iOS development, macOS only)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd pdf_tool
-   ```
-
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Run the app**
-   ```bash
-   flutter run
-   ```
-
-### Platform-Specific Setup
-
-#### Android
-
-Add the following permissions to `android/app/src/main/AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-#### iOS
-
-Add the following to `ios/Runner/Info.plist`:
-
-```xml
-<key>NSPhotoLibraryUsageDescription</key>
-<string>We need access to your photo library to select images for conversion</string>
-<key>NSCameraUsageDescription</key>
-<string>We need access to your camera to capture images for conversion</string>
-```
-
-## Project Structure
-
-```
-lib/
-├── main.dart                          # App entry point
-├── core/                              # Core functionality
-│   ├── constants/                     # App constants
-│   │   ├── app_colors.dart           # Color palette
-│   │   ├── app_strings.dart          # String constants
-│   │   ├── app_dimensions.dart       # Spacing & sizing
-│   │   ├── enums.dart                # Enumerations
-│   │   └── tools_data.dart           # Tool configurations
-│   ├── theme/                         # Theme configuration
-│   │   ├── app_theme.dart            # Light/Dark themes
-│   │   └── text_styles.dart          # Typography
-│   ├── utils/                         # Utility classes
-│   │   └── responsive_helper.dart    # Responsive design
-│   ├── widgets/                       # Reusable widgets
-│   │   └── custom_button.dart        # Custom button
-│   └── services/                      # Business logic
-│       ├── conversion_service.dart   # Conversion operations
-│       └── file_service.dart         # File operations
-├── features/                          # Feature modules
-│   ├── home/                          # Home feature
-│   │   ├── models/                    # Data models
-│   │   └── presentation/              # UI components
-│   │       ├── screens/               # Screens
-│   │       └── widgets/               # Feature widgets
-│   └── conversion/                    # Conversion feature
-│       ├── models/                    # Data models
-│       ├── providers/                 # State management
-│       └── presentation/              # UI components
-│           ├── screens/               # Screens
-│           └── widgets/               # Feature widgets
-└── routes/                            # Navigation
-    └── app_routes.dart               # Route configuration
-```
-
-## Architecture
-
-This app follows **Clean Architecture** principles with:
-
-- **Feature-based modular structure** - Each feature is self-contained
-- **Provider for state management** - Simple and effective state handling
-- **Separation of concerns** - UI, business logic, and data are separated
-- **SOLID principles** - Maintainable and scalable code
-
-## Dependencies
-
-### Core
-- `flutter` - Flutter SDK
-- `provider` - State management
-
-### File Handling
-- `file_picker` - File selection
-- `path_provider` - File paths
-- `open_file` - Open files in external apps
-- `share_plus` - Share files
-
-### PDF Operations
-- `pdf` - PDF creation
-- `syncfusion_flutter_pdf` - Advanced PDF operations
-- `printing` - PDF rendering
-
-### Image Processing
-- `image` - Image manipulation
-
-### UI Components
-- `flutter_svg` - SVG support
-- `cached_network_image` - Image caching
-- `shimmer` - Loading effects
-
-### Utilities
-- `intl` - Internationalization
-- `uuid` - Unique IDs
-- `permission_handler` - Permission management
-
-## Usage
-
-### Converting a File
-
-1. **Select a Tool** - Choose from the home screen (e.g., "PDF to Word")
-2. **Upload File** - Tap the upload area and select your file
-3. **Convert** - Tap the "Convert" button
-4. **Download/Share** - Once complete, download or share the converted file
-
-### Supported File Formats
-
-**Input Formats:**
-- PDF: `.pdf`
-- Images: `.jpg`, `.jpeg`, `.png`, `.webp`, `.bmp`
-- Word: `.doc`, `.docx`
-- Excel: `.xls`, `.xlsx`
-- PowerPoint: `.ppt`, `.pptx`
-- Text: `.txt`
-
-**Output Formats:**
-- PDF, Word (DOCX), Excel (XLSX), PowerPoint (PPTX)
-- Images (PNG, JPG), Text (TXT), HTML, EPUB
-
-## Limitations
-
-- **Maximum file size**: 50MB
-- **PDF to Word**: Currently extracts text only (formatting not preserved)
-- **PDF to Excel**: Currently extracts text only (table structure not preserved)
-- **Some conversions**: Require additional implementation (marked as "Coming Soon")
-
-## Future Enhancements
-
-- [ ] Cloud conversion API integration for advanced conversions
-- [ ] OCR support for scanned PDFs
-- [ ] Batch conversion (multiple files)
-- [ ] Cloud storage integration (Google Drive, Dropbox)
-- [ ] PDF compression
-- [ ] PDF merge/split
-- [ ] PDF annotations
-- [ ] Form filling
-- [ ] Multi-language support
-- [ ] Conversion history
-- [ ] Favorite tools
-
-## Building for Release
-
-### Android
-
-```bash
-# APK
-flutter build apk --release
-
-# App Bundle (for Google Play)
-flutter build appbundle --release
-```
-
-### iOS
-
-```bash
-flutter build ios --release
-```
-
-### Web
-
-```bash
-flutter build web --release
-```
-
-## Testing
-
-```bash
-# Run all tests
-flutter test
-
-# Run with coverage
-flutter test --coverage
-```
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Email: support@pdftoolspro.com
-
-## Acknowledgments
-
-- Flutter team for the amazing framework
-- Syncfusion for PDF processing capabilities
-- All open-source contributors
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-3.10+-02569B?logo=flutter&logoColor=white" alt="Flutter" />
+  <img src="https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart&logoColor=white" alt="Dart" />
+  <img src="https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-lightgrey" alt="Platforms" />
+  <img src="https://img.shields.io/badge/license-Add%20LICENSE-lightgrey" alt="License" />
+</p>
 
 ---
 
-**Made with ❤️ using Flutter**
+## Table of contents
 
-Version: 1.0.0
-Last Updated: January 2026
-#   P d f - T o o l - A p p -  
- #   P d f - T o o l - A p p -  
- #   P d f - T o o l - A p p -  
- 
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Getting started](#getting-started)
+- [Usage](#usage)
+- [Supported formats](#supported-formats)
+- [Project structure](#project-structure)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Known limitations](#known-limitations)
+- [Building for release](#building-for-release)
+- [Contributing](#contributing)
+- [Third-party licenses](#third-party-licenses)
+- [License](#license)
+
+---
+
+## Features
+
+### Conversions — From PDF
+
+| Tool | Output | Notes |
+|------|--------|--------|
+| PDF to Word | `.docx` | Text extraction; layout and images are not preserved |
+| PDF to Excel | `.xlsx` | Text-based extraction; complex tables may not map cleanly |
+| PDF to PowerPoint | `.pptx` | Text on a single slide |
+| PDF to Image | `.png` | First page only; quality setting affects DPI |
+| PDF to Text | `.txt` | Full text extraction |
+| PDF to HTML | `.html` | Text wrapped in a simple HTML template |
+| PDF to EPUB | `.epub` | Plain-text export (not a full EPUB package) |
+
+### Conversions — To PDF
+
+| Tool | Input | Notes |
+|------|--------|--------|
+| Image to PDF | JPG, PNG, WebP, BMP, GIF | One image per PDF page |
+| Word to PDF | `.doc`, `.docx` | Parses DOCX text; legacy `.doc` support is limited |
+| Excel to PDF | `.xls`, `.xlsx` | First sheet, up to ~50 rows (demo limit in parser) |
+| PowerPoint to PDF | `.ppt`, `.pptx` | Slide text extraction |
+| Text to PDF | `.txt` | Plain text to PDF |
+| Merge PDF | Multiple `.pdf` | Combines files in selection order (batch mode) |
+
+### App experience
+
+- **On-device processing** — Files are converted locally; no upload to a cloud API
+- **Material Design 3** — Light and dark themes
+- **Responsive layout** — Phone, tablet, and desktop-friendly UI
+- **Conversion history** — Recent jobs stored with `shared_preferences`
+- **Batch conversion** — Convert multiple files or merge PDFs
+- **Share & save** — Open, share, or save results via `share_plus` and the system file picker
+- **Settings** — Theme, default quality, profile, help, and legal screens
+
+---
+
+## Screenshots
+
+> Add screenshots to `docs/screenshots/` and reference them here before publishing.
+
+```markdown
+| Home | Conversion | History |
+|------|------------|---------|
+| ![Home](docs/screenshots/home.png) | ![Convert](docs/screenshots/convert.png) | ![History](docs/screenshots/history.png) |
+```
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) **3.10.3+** (Dart **3.10.3+**)
+- Android Studio / Xcode (for mobile targets)
+- A device, emulator, or desktop target enabled in Flutter
+
+### Clone and run
+
+```bash
+git clone https://github.com/hassaankhalid225/Pdf-Tool-App-.git
+cd Pdf-Tool-App-
+flutter pub get
+flutter run
+```
+
+### Platform notes
+
+| Platform | Notes |
+|----------|--------|
+| **Android** | Storage/photo permissions are requested at runtime via `permission_handler` (API 33+ uses photos/videos; older APIs use storage). |
+| **iOS** | Add usage descriptions to `ios/Runner/Info.plist` if you enable camera or photo library access. |
+| **Desktop / Web** | Supported by Flutter; file picking uses `file_picker` per platform. |
+
+Verify your toolchain:
+
+```bash
+flutter doctor
+```
+
+---
+
+## Usage
+
+1. Open the app and pick a tool from **Home** (e.g. **PDF to Word**).
+2. Tap the upload area and select a file (max **50 MB**).
+3. Tap **Convert Now** for a single file, or **Add More** → **Convert All** for batch / merge.
+4. When finished, **download**, **share**, or **open** the output from the result screen.
+5. View past jobs under **Files** (history tab).
+
+**Merge PDF:** Select multiple PDFs, then use **Convert All** in batch mode.
+
+---
+
+## Supported formats
+
+**Input**
+
+| Category | Extensions |
+|----------|------------|
+| PDF | `.pdf` |
+| Images | `.jpg`, `.jpeg`, `.png`, `.webp`, `.bmp`, `.gif` |
+| Word | `.doc`, `.docx` |
+| Excel | `.xls`, `.xlsx` |
+| PowerPoint | `.ppt`, `.pptx` |
+| Text | `.txt` |
+
+**Output**
+
+`.pdf`, `.docx`, `.xlsx`, `.pptx`, `.png`, `.txt`, `.html`, `.epub` (see [limitations](#known-limitations))
+
+---
+
+## Project structure
+
+```
+lib/
+├── main.dart
+├── routes/
+│   └── app_routes.dart
+├── core/
+│   ├── constants/          # Colors, strings, tools catalog, enums
+│   ├── models/
+│   ├── providers/          # Settings, navigation
+│   ├── services/           # Conversion, files, permissions
+│   ├── theme/
+│   ├── utils/
+│   └── widgets/
+└── features/
+    ├── home/               # Tool grid and categories
+    ├── conversion/         # Conversion flow, provider, UI
+    ├── history/            # Conversion history
+    ├── settings/           # Theme, profile, legal, subscription UI
+    ├── about/
+    └── main/               # Bottom navigation shell
+```
+
+---
+
+## Architecture
+
+- **Feature-first folders** — UI, models, and providers grouped by feature
+- **Provider** (`provider`) for app and conversion state
+- **Services** — `ConversionService`, `FileService`, and `PermissionService` separate business logic from widgets
+- **Declarative routing** — Named routes in `app_routes.dart`
+
+Conversion flow: `ConversionScreen` → `ConversionProvider` → `ConversionService` → output file on disk.
+
+---
+
+## Tech stack
+
+| Area | Packages |
+|------|----------|
+| State | `provider` |
+| PDF | `pdf`, `syncfusion_flutter_pdf`, `printing` |
+| Office | `syncfusion_flutter_xlsio`, `archive`, `xml` |
+| Files | `file_picker`, `path_provider`, `open_file`, `share_plus` |
+| Images | `image` |
+| Permissions | `permission_handler`, `device_info_plus` |
+| Storage | `shared_preferences` |
+| UI | Material 3, `shimmer`, `flutter_svg`, `cached_network_image` |
+
+---
+
+## Known limitations
+
+- **Max file size:** 50 MB (`ConversionService.maxFileSize`).
+- **PDF to Image:** Only the **first page** is exported.
+- **Layout fidelity:** PDF → Word/Excel/PowerPoint and Office → PDF conversions are **text-oriented**; fonts, images, and complex layouts are not fully preserved.
+- **PDF to EPUB:** Outputs extracted text, not a standards-compliant EPUB ebook.
+- **Single-file vs batch:** `convertFile()` wires a subset of tools; tools such as **PDF to PowerPoint**, **PDF to HTML**, **Excel to PDF**, and **Merge PDF** rely on **batch** (`convertBatch()` / **Convert All**). Contributors can unify both code paths in `conversion_provider.dart`.
+- **History:** Metadata is stored locally; output files may be cleared when the OS cleans temp storage.
+
+---
+
+## Building for release
+
+```bash
+# Android APK
+flutter build apk --release
+
+# Android App Bundle (Play Store)
+flutter build appbundle --release
+
+# iOS (on macOS)
+flutter build ios --release
+
+# Windows / macOS / Linux / Web
+flutter build windows --release
+flutter build macos --release
+flutter build linux --release
+flutter build web --release
+```
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes with a clear message
+4. Push and open a Pull Request against `main`
+
+Please keep PRs focused and run `flutter analyze` and `flutter test` before submitting.
+
+---
+
+## Third-party licenses
+
+This project uses open-source packages from [pub.dev](https://pub.dev) and **Syncfusion** Flutter packages (`syncfusion_flutter_pdf`, `syncfusion_flutter_xlsio`). Syncfusion components require a [valid license](https://www.syncfusion.com/sales/communitylicense) for commercial use. Review each dependency’s license before distributing your own build.
+
+---
+
+## License
+
+No `LICENSE` file is included yet. If you plan to open-source this repo, add a license file (for example [MIT](https://choosealicense.com/licenses/mit/)) and update the badge above.
+
+---
+
+## Acknowledgments
+
+- [Flutter](https://flutter.dev) team
+- [Syncfusion](https://www.syncfusion.com/flutter-widgets) for PDF and Excel APIs
+- All contributors and package authors on pub.dev
+
+---
+
+<p align="center">
+  <strong>PDF Tools Pro</strong> · v1.0.0 · Built with Flutter
+</p>
