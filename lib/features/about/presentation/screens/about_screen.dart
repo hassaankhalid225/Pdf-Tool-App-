@@ -88,10 +88,13 @@ class AboutScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.picture_as_pdf,
-            size: 80,
-            color: Colors.white,
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
@@ -352,10 +355,13 @@ class AboutScreen extends StatelessWidget {
           ),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.picture_as_pdf,
-          size: 40,
-          color: Colors.white,
+        child: ClipOval(
+          child: Image.asset(
+            'assets/images/app_icon.png',
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
