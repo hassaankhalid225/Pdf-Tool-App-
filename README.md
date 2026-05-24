@@ -1,4 +1,4 @@
-# 📄 PDF Tools Pro
+# PDF Tools Pro
 
 A premium, privacy-first, cross-platform Flutter application for converting and managing documents locally on your device. Powered by Material 3 design and built with a clean feature-first architecture.
 
@@ -11,37 +11,38 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
 
 ---
 
-## 🌟 Key Highlights
+## Key Highlights
 
-*   🛡️ **100% Privacy & Offline Processing**: Your files never leave your device. All document conversions run completely offline using native parsers and writers.
-*   🎨 **Premium Material Design 3 UI**: Featuring a beautiful dark mode, modern card designs, vibrant gradients, and glassmorphism elements.
-*   ⚡ **Fluid Navigation**: Built with an elegant `google_nav_bar` (GNav) bottom navigation system for smooth transition animations.
-*   📁 **Local File Management**: Open, share, and save your converted files directly to your device's Downloads or Documents folders using native system dialogs.
+*   **100% Privacy & Offline Processing**: Your files never leave your device. All document conversions run completely offline using native parsers and writers.
+*   **Premium Material Design 3 UI**: Featuring a beautiful dark mode, modern card designs, vibrant gradients, and glassmorphism elements.
+*   **Fluid Navigation**: Built with an elegant `google_nav_bar` (GNav) bottom navigation system for smooth transition animations.
+*   **Local File Management**: Open, share, and save your converted files directly to your device's Downloads or Documents folders using native system dialogs.
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 
-- [Features](#-features)
+- [Features](#features)
   - [Conversions: From PDF](#conversions-from-pdf)
   - [Conversions: To PDF](#conversions-to-pdf)
   - [App Highlights](#app-highlights)
-- [Screenshots](#-screenshots)
-- [Tech Stack](#-tech-stack)
-- [Project Architecture](#-project-architecture)
-- [Getting Started](#-getting-started)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+- [Project Architecture](#project-architecture)
+- [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Clone & Run](#clone--run)
   - [Platform Configuration](#platform-configuration)
-- [Usage Guide](#-usage-guide)
-- [Known Limitations](#-known-limitations)
-- [Building for Release](#-building-for-release)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Usage Guide](#usage-guide)
+- [Known Limitations](#known-limitations)
+- [Building for Release](#building-for-release)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ---
 
-## 🛠️ Features
+## Features
 
 ### Conversions: From PDF
 
@@ -76,7 +77,7 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
 
 ---
 
-## 📱 Screenshots
+## Screenshots
 
 > Place your app screenshots inside [assets/screenshots/](file:///d:/Switch2itech/Flutter%20APps/pdf_tool/assets/screenshots/) and reference them below before publishing your repository.
 
@@ -107,7 +108,7 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 | Component | Library / Package | Purpose |
 |:---|:---|:---|
@@ -122,7 +123,7 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
 
 ---
 
-## 🏗️ Project Architecture
+## Project Architecture
 
 The project is structured following clean **Feature-First** guidelines:
 
@@ -150,7 +151,7 @@ lib/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -190,7 +191,7 @@ To build on iOS, add keys in `ios/Runner/Info.plist` for file picking support:
 
 ---
 
-## 💡 Usage Guide
+## Usage Guide
 
 1.  **Select a Tool**: Choose from categorized sections on the Home screen or search using the bar.
 2.  **Upload Your Files**: Tap the upload dropzone to pick files from your device.
@@ -201,7 +202,7 @@ To build on iOS, add keys in `ios/Runner/Info.plist` for file picking support:
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 *   **File Size Limit**: By default, a maximum limit of **50 MB** per file is enforced in `ConversionService.maxFileSize` to prevent memory bottlenecks.
 *   **Layout Preservation**: Advanced styles, fonts, and images in PDF to Word or Excel conversions are text-focused; complex formats may be simplified.
@@ -209,7 +210,7 @@ To build on iOS, add keys in `ios/Runner/Info.plist` for file picking support:
 
 ---
 
-## 📦 Building for Release
+## Building for Release
 
 Build production-ready, obfuscated release bundles for supported targets:
 
@@ -235,7 +236,7 @@ flutter build web --release
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome community contributions!
 
@@ -247,14 +248,29 @@ We welcome community contributions!
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-## ❤️ Acknowledgments
+## Acknowledgments
 
 *   The [Flutter Community](https://flutter.dev) for the amazing cross-platform tools.
 *   [Syncfusion](https://www.syncfusion.com) for their robust office file-processing APIs.
 *   All developers who contributed to the packages on [pub.dev](https://pub.dev).
+
+---
+
+## Contact
+
+**Hassaan Khalid**  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/hassaan-khalid-27967628a) 
+[![Instagram](https://img.shields.io/badge/Instagram-%23E4405F.svg?logo=instagram&logoColor=white)](https://www.instagram.com/hassaan_kreative/)
+[![Gmail](https://img.shields.io/badge/Gmail-D14836?logo=gmail&logoColor=white)](mailto:hassaankhalid225@gmail.com)
+
+Project Link: [https://github.com/hassaankhalid225/Pdf-Tool-App-](https://github.com/hassaankhalid225/Pdf-Tool-App-)
+
+<p align="center">
+  <strong>PDF Tools Pro</strong> · v1.0.0 · Built with Flutter
+</p>
