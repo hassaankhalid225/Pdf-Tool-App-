@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
-  }
+  } 
 
   @override
   Widget build(BuildContext context) {
