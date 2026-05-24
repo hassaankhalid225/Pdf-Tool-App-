@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 
 /// Reusable surface card with the project's default elevation and radius.
@@ -127,7 +128,7 @@ class InfoCard extends StatelessWidget {
           ),
           if (onTap != null)
             Icon(
-              Icons.arrow_forward_ios,
+              LucideIcons.chevron_right,
               size: AppDimensions.iconSm,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
             ),

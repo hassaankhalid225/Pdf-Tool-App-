@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/features/home/models/tool_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf_tool/core/providers/settings_provider.dart';
@@ -167,7 +168,7 @@ class _ToolCardWidgetState extends State<ToolCardWidget>
                         child: Padding(
                           padding: const EdgeInsets.all(4),
                           child: Icon(
-                            isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+                            LucideIcons.star,
                             size: 18,
                             color: isFav
                                 ? Colors.amber

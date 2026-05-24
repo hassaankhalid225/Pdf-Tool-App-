@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/app_colors.dart';
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 import 'package:pdf_tool/core/theme/text_styles.dart';
@@ -77,7 +78,7 @@ class EmptyStateWidget extends StatelessWidget {
               CustomButton(
                 text: actionText!,
                 onPressed: onActionPressed,
-                icon: actionIcon ?? Icons.arrow_forward_rounded,
+                icon: actionIcon ?? LucideIcons.arrow_right,
               ),
             ],
           ],
@@ -95,13 +96,13 @@ class NoFilesEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EmptyStateWidget(
-      icon: Icons.folder_open_rounded,
+      icon: LucideIcons.folder_open,
       title: 'No File Selected',
       message: 'Pick a file from your device to get started',
       gradient: AppColors.gradientPurple,
       actionText: onBrowseFiles != null ? 'Browse Files' : null,
       onActionPressed: onBrowseFiles,
-      actionIcon: Icons.upload_file_rounded,
+      actionIcon: LucideIcons.file_up,
     );
   }
 }
@@ -112,7 +113,7 @@ class NoHistoryEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const EmptyStateWidget(
-      icon: Icons.history_rounded,
+      icon: LucideIcons.history,
       title: 'Nothing here yet',
       message:
           'Your converted files will land here so you can find them anytime.',
@@ -127,7 +128,7 @@ class NoFavoritesEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const EmptyStateWidget(
-      icon: Icons.star_rounded,
+      icon: LucideIcons.star,
       title: 'No Favorite Tools',
       message:
           'Tap the bookmark on any tool to pin it for one-tap access later.',
@@ -149,7 +150,7 @@ class ErrorStateWidget extends StatelessWidget {
     required this.message,
     this.actionText,
     this.onActionPressed,
-    this.icon = Icons.error_outline_rounded,
+    this.icon = LucideIcons.circle_alert,
   });
 
   @override
@@ -161,7 +162,7 @@ class ErrorStateWidget extends StatelessWidget {
       gradient: const [Color(0xFFEF4444), Color(0xFFF97316)],
       actionText: actionText,
       onActionPressed: onActionPressed,
-      actionIcon: Icons.refresh_rounded,
+      actionIcon: LucideIcons.refresh_cw,
     );
   }
 }
@@ -183,13 +184,13 @@ class SuccessStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EmptyStateWidget(
-      icon: Icons.check_circle_rounded,
+      icon: LucideIcons.circle_check,
       title: title,
       message: message,
       gradient: const [Color(0xFF10B981), Color(0xFF06B6D4)],
       actionText: actionText,
       onActionPressed: onActionPressed,
-      actionIcon: Icons.check_rounded,
+      actionIcon: LucideIcons.check,
     );
   }
 }

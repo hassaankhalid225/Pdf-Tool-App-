@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/app_strings.dart';
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 import 'package:pdf_tool/core/constants/app_colors.dart';
@@ -119,7 +120,7 @@ class AboutScreen extends StatelessWidget {
 
   Widget _buildVersionCard(BuildContext context) {
     return InfoCard(
-      icon: Icons.info_outline,
+      icon: LucideIcons.info,
       title: 'Version',
       description: AppStrings.appVersion,
       iconColor: AppColors.info,
@@ -134,7 +135,7 @@ class AboutScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.description,
+                LucideIcons.file_text,
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -164,7 +165,7 @@ class AboutScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.star,
+                LucideIcons.star,
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -195,7 +196,7 @@ class AboutScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.check_circle,
+            LucideIcons.circle_check,
             size: AppDimensions.iconSm,
             color: AppColors.success,
           ),
@@ -219,7 +220,7 @@ class AboutScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.code,
+                LucideIcons.code,
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -254,23 +255,23 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.privacy_tip),
+            leading: const Icon(LucideIcons.shield),
             title: const Text('Privacy Policy'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const Icon(LucideIcons.chevron_right, size: 16),
             onTap: () => _showPrivacyPolicy(context),
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.description),
+            leading: const Icon(LucideIcons.file_text),
             title: const Text('Terms of Service'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const Icon(LucideIcons.chevron_right, size: 16),
             onTap: () => _showTermsOfService(context),
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.gavel),
+            leading: const Icon(LucideIcons.gavel),
             title: const Text('Licenses'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const Icon(LucideIcons.chevron_right, size: 16),
             onTap: () => _showLicenses(context),
           ),
         ],

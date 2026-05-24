@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 /// Drag-and-drop style upload area (iLovePDF / Smallpdf pattern), refreshed
 /// with a dashed border, soft gradient fill and a friendlier CTA.
@@ -15,7 +16,7 @@ class ConversionUploadZone extends StatelessWidget {
     this.isLoading = false,
     this.title = 'Upload File(s)',
     this.subtitle = 'Select one or multiple files',
-    this.icon = Icons.cloud_upload_outlined,
+    this.icon = LucideIcons.cloud_upload,
   });
 
   @override
@@ -138,7 +139,7 @@ class ConversionUploadZone extends StatelessWidget {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                          Icon(LucideIcons.plus, color: Colors.white, size: 18),
                           SizedBox(width: 6),
                           Text(
                             'Choose files',

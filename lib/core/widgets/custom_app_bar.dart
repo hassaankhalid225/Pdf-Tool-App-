@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 
 /// Custom AppBar widget with consistent styling and optional features
@@ -51,7 +52,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     if (showBackButton && Navigator.of(context).canPop()) {
       return IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(LucideIcons.arrow_left),
         onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
         tooltip: 'Back',
       );
@@ -100,7 +101,7 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
         backgroundColor: Colors.transparent,
         leading: showBackButton && Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(LucideIcons.arrow_left),
                 onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
               )
             : null,

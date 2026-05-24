@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/enums.dart';
 
 /// Model representing a conversion tool
@@ -74,7 +75,7 @@ class ToolModel {
       id: json['id'] as String,
       title: json['title'] as String,
       subtitle: json['subtitle'] as String,
-      icon: Icons.picture_as_pdf, // Default icon
+      icon: LucideIcons.file_text, // Default icon
       conversionType: ConversionType.values.firstWhere(
         (e) => e.name == json['conversionType'],
       ),

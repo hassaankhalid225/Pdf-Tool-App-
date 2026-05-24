@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/features/home/presentation/screens/home_screen.dart';
 import 'package:pdf_tool/features/favorites/presentation/screens/favorites_screen.dart';
 import 'package:pdf_tool/features/history/presentation/screens/history_screen.dart';
@@ -86,19 +87,19 @@ class _FloatingBottomNav extends StatelessWidget {
               onTabChange: onTap,
               tabs: const [
                 GButton(
-                  icon: Icons.home_rounded,
+                  icon: LucideIcons.house,
                   text: 'Home',
                 ),
                 GButton(
-                  icon: Icons.star_rounded,
+                  icon: LucideIcons.star,
                   text: 'Favorites',
                 ),
                 GButton(
-                  icon: Icons.folder_rounded,
+                  icon: LucideIcons.folder,
                   text: 'Files',
                 ),
                 GButton(
-                  icon: Icons.person_rounded,
+                  icon: LucideIcons.user,
                   text: 'Profile',
                 ),
               ],

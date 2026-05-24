@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 import 'package:pdf_tool/core/utils/responsive_helper.dart';
@@ -63,7 +64,7 @@ class _ToolCategoryScreenState extends State<ToolCategoryScreen> {
                   decoration: InputDecoration(
                     hintText: 'Search ${widget.title.toLowerCase()}…',
                     prefixIcon: Icon(
-                      Icons.search_rounded,
+                      LucideIcons.search,
                       color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
@@ -82,7 +83,7 @@ class _ToolCategoryScreenState extends State<ToolCategoryScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.search_off_rounded,
+                            LucideIcons.search_x,
                             size: 48,
                             color: colorScheme.onSurface.withValues(alpha: 0.4),
                           ),

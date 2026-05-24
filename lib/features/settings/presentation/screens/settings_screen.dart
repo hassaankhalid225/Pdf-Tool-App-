@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pdf_tool/core/constants/app_colors.dart';
@@ -40,7 +41,7 @@ class SettingsScreen extends StatelessWidget {
               Consumer<SettingsProvider>(
                 builder: (context, s, _) {
                   return _SettingTile(
-                    icon: Icons.dark_mode_outlined,
+                    icon: LucideIcons.moon,
                     iconGradient: const [Color(0xFF1E293B), Color(0xFF334155)],
                     title: 'Dark mode',
                     subtitle: 'Switch to the dark Material 3 theme.',
@@ -57,11 +58,11 @@ class SettingsScreen extends StatelessWidget {
               Consumer<SettingsProvider>(
                 builder: (context, s, _) {
                   return _SettingTile(
-                    icon: Icons.high_quality_outlined,
+                    icon: LucideIcons.sliders_horizontal,
                     iconGradient: AppColors.gradientBlue,
                     title: 'Default quality',
                     subtitle: _qualityLabel(s.defaultQuality),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    trailing: const Icon(LucideIcons.chevron_right),
                     onTap: () => _showQualityDialog(context),
                   );
                 },
@@ -69,11 +70,11 @@ class SettingsScreen extends StatelessWidget {
               Consumer<SettingsProvider>(
                 builder: (context, s, _) {
                   return _SettingTile(
-                    icon: Icons.folder_open_rounded,
+                    icon: LucideIcons.folder_open,
                     iconGradient: AppColors.gradientOrange,
                     title: 'Save location',
                     subtitle: _locationLabel(s.storageLocation),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    trailing: const Icon(LucideIcons.chevron_right),
                     onTap: () => _showStorageDialog(context),
                   );
                 },
@@ -81,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
               Consumer<SettingsProvider>(
                 builder: (context, s, _) {
                   return _SettingTile(
-                    icon: Icons.auto_awesome_motion_outlined,
+                    icon: LucideIcons.external_link,
                     iconGradient: AppColors.gradientGreen,
                     title: 'Open file after convert',
                     subtitle: 'Launch the result in the default app.',
@@ -95,7 +96,7 @@ class SettingsScreen extends StatelessWidget {
               Consumer<SettingsProvider>(
                 builder: (context, s, _) {
                   return _SettingTile(
-                    icon: Icons.history_rounded,
+                    icon: LucideIcons.history,
                     iconGradient: AppColors.gradientPurple,
                     title: 'Keep conversion history',
                     subtitle: 'Show recent files on the home screen.',
@@ -110,22 +111,22 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _SectionHeader(context, 'Support'),
               _SettingTile(
-                icon: Icons.help_outline_rounded,
+                icon: LucideIcons.circle_question_mark,
                 iconGradient: AppColors.gradientCyan,
                 title: 'Help & FAQ',
                 subtitle: 'How tools work, tips, common problems.',
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(LucideIcons.chevron_right),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const HelpScreen()),
                 ),
               ),
               _SettingTile(
-                icon: Icons.info_outline_rounded,
+                icon: LucideIcons.info,
                 iconGradient: AppColors.gradientIndigo,
                 title: 'About this app',
                 subtitle: 'Version, credits, licenses.',
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(LucideIcons.chevron_right),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AboutScreen()),
@@ -135,10 +136,10 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _SectionHeader(context, 'Legal'),
               _SettingTile(
-                icon: Icons.privacy_tip_outlined,
+                icon: LucideIcons.shield,
                 iconGradient: const [Color(0xFF64748B), Color(0xFF94A3B8)],
                 title: 'Privacy Policy',
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(LucideIcons.chevron_right),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -153,10 +154,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               _SettingTile(
-                icon: Icons.description_outlined,
+                icon: LucideIcons.file_text,
                 iconGradient: const [Color(0xFF64748B), Color(0xFF94A3B8)],
                 title: 'Terms of Service',
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(LucideIcons.chevron_right),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -174,7 +175,7 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
               _SettingTile(
-                icon: Icons.restore_rounded,
+                icon: LucideIcons.rotate_ccw,
                 iconGradient: const [Color(0xFFEF4444), Color(0xFFF97316)],
                 title: 'Reset settings',
                 subtitle: 'Restore the default preferences.',
@@ -270,9 +271,9 @@ class SettingsScreen extends StatelessWidget {
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(desc),
       trailing: selected
-          ? Icon(Icons.check_circle_rounded,
+          ? Icon(LucideIcons.circle_check,
               color: Theme.of(ctx).colorScheme.primary)
-          : Icon(Icons.radio_button_unchecked_rounded,
+          : Icon(LucideIcons.circle,
               color: Theme.of(ctx).colorScheme.outline),
       onTap: () {
         settings.setDefaultQuality(value);
@@ -312,9 +313,9 @@ class SettingsScreen extends StatelessWidget {
     return ListTile(
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       trailing: selected
-          ? Icon(Icons.check_circle_rounded,
+          ? Icon(LucideIcons.circle_check,
               color: Theme.of(ctx).colorScheme.primary)
-          : Icon(Icons.radio_button_unchecked_rounded,
+          : Icon(LucideIcons.circle,
               color: Theme.of(ctx).colorScheme.outline),
       onTap: () {
         settings.setStorageLocation(value);
@@ -327,7 +328,7 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.restore_rounded, size: 36),
+        icon: const Icon(LucideIcons.rotate_ccw, size: 36),
         title: const Text('Reset settings?'),
         content: const Text(
           'This will restore quality, save location and other preferences to their defaults. '

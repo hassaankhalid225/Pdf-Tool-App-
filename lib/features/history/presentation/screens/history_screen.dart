@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -43,13 +44,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.folder_rounded, color: Colors.white, size: 22),
+            child: const Icon(LucideIcons.folder, color: Colors.white, size: 22),
           ),
         ),
         title: const Text('My Files', style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_sweep_outlined),
+            icon: const Icon(LucideIcons.trash_2),
             tooltip: 'Clear history',
             onPressed: () => _showClearHistoryDialog(context),
           ),
@@ -155,7 +156,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          icon: const Icon(Icons.delete_sweep_outlined, size: 36),
+          icon: const Icon(LucideIcons.trash_2, size: 36),
           title: const Text('Clear all history?'),
           content: const Text(
             'Your converted files in the system will not be deleted. '
@@ -210,7 +211,7 @@ class _SearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: 'Search your files…',
           prefixIcon: Icon(
-            Icons.search_rounded,
+            LucideIcons.search,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
           ),
           border: InputBorder.none,
@@ -382,7 +383,7 @@ class _FileTile extends StatelessWidget {
               ),
               IconButton(
                 icon: Icon(
-                  Icons.ios_share_rounded,
+                  LucideIcons.share_2,
                   color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 onPressed: () {
@@ -393,7 +394,7 @@ class _FileTile extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 icon: Icon(
-                  Icons.more_vert_rounded,
+                  LucideIcons.ellipsis_vertical,
                   color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 onSelected: (value) {
@@ -411,7 +412,7 @@ class _FileTile extends StatelessWidget {
                     const PopupMenuItem(
                       value: 'open',
                       child: ListTile(
-                        leading: Icon(Icons.open_in_new_rounded),
+                        leading: Icon(LucideIcons.external_link),
                         title: Text('Open'),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -420,7 +421,7 @@ class _FileTile extends StatelessWidget {
                     const PopupMenuItem(
                       value: 'download',
                       child: ListTile(
-                        leading: Icon(Icons.download_rounded),
+                        leading: Icon(LucideIcons.download),
                         title: Text('Save to device'),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -428,7 +429,7 @@ class _FileTile extends StatelessWidget {
                   const PopupMenuItem(
                     value: 'delete',
                     child: ListTile(
-                      leading: Icon(Icons.delete_outline_rounded, color: Colors.red),
+                      leading: Icon(LucideIcons.trash_2, color: Colors.red),
                       title: Text('Remove from history',
                           style: TextStyle(color: Colors.red)),
                       contentPadding: EdgeInsets.zero,
@@ -444,17 +445,17 @@ class _FileTile extends StatelessWidget {
   }
 
   IconData _iconFor(ConversionType type) {
-    if (type == ConversionType.mergePdf) return Icons.merge_type_rounded;
-    if (type.isToPdf) return Icons.picture_as_pdf_rounded;
+    if (type == ConversionType.mergePdf) return LucideIcons.merge;
+    if (type.isToPdf) return LucideIcons.file_text;
     final name = type.name.toLowerCase();
-    if (name.contains('word')) return Icons.description_rounded;
-    if (name.contains('excel')) return Icons.grid_on_rounded;
-    if (name.contains('powerpoint')) return Icons.slideshow_rounded;
-    if (name.contains('image')) return Icons.image_rounded;
-    if (name.contains('html')) return Icons.code_rounded;
-    if (name.contains('epub')) return Icons.menu_book_rounded;
-    if (name.contains('text')) return Icons.text_snippet_rounded;
-    return Icons.insert_drive_file_rounded;
+    if (name.contains('word')) return LucideIcons.file_text;
+    if (name.contains('excel')) return LucideIcons.file_spreadsheet;
+    if (name.contains('powerpoint')) return LucideIcons.presentation;
+    if (name.contains('image')) return LucideIcons.image;
+    if (name.contains('html')) return LucideIcons.code;
+    if (name.contains('epub')) return LucideIcons.book_open;
+    if (name.contains('text')) return LucideIcons.file_text;
+    return LucideIcons.file;
   }
 
   List<Color> _iconGradient(ConversionType type) {

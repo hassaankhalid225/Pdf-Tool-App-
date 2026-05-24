@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pdf_tool/core/constants/app_colors.dart';
@@ -84,7 +85,7 @@ class _ConversionScreenState extends State<ConversionScreen> {
               ),
               leading: IconButton(
                 icon: Icon(
-                  completed ? Icons.close_rounded : Icons.arrow_back_rounded,
+                  completed ? LucideIcons.x : LucideIcons.arrow_left,
                 ),
                 onPressed: () {
                   if (completed) {
@@ -292,7 +293,7 @@ class _StepDot extends StatelessWidget {
           ),
           child: Center(
             child: done
-                ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
                 : Text(
                     '$index',
                     style: TextStyle(
@@ -413,7 +414,7 @@ class _QueueSection extends StatelessWidget {
               TextButton.icon(
                 onPressed: () =>
                     provider.addMoreFiles(tool.supportedInputFormats, type),
-                icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                icon: const Icon(LucideIcons.circle_plus, size: 18),
                 label: const Text('Add more'),
               ),
           ],
@@ -433,7 +434,7 @@ class _QueueSection extends StatelessWidget {
           const SizedBox(height: 8),
           _Hint(
             color: Colors.orange,
-            icon: Icons.info_outline_rounded,
+            icon: LucideIcons.info,
             message: 'Pick at least 2 PDF files to merge.',
           ),
         ],
@@ -457,7 +458,7 @@ class _QueueSection extends StatelessWidget {
                   context.read<SettingsProvider>().defaultQuality;
               provider.retryFailed(type, quality: quality);
             },
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(LucideIcons.refresh_cw),
             label: const Text(AppStrings.retry),
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
@@ -466,7 +467,7 @@ class _QueueSection extends StatelessWidget {
           const SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: provider.reset,
-            icon: const Icon(Icons.add_rounded),
+            icon: const Icon(LucideIcons.plus),
             label: const Text(AppStrings.convertAnother),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
@@ -479,7 +480,7 @@ class _QueueSection extends StatelessWidget {
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: provider.reset,
-            icon: const Icon(Icons.swap_horiz_rounded),
+            icon: const Icon(LucideIcons.arrow_left_right),
             label: const Text(AppStrings.changeFile),
           ),
         ],
@@ -511,16 +512,16 @@ class _FileRow extends StatelessWidget {
     IconData statusIcon;
     if (isDone) {
       statusColor = Colors.green;
-      statusIcon = Icons.check_circle_rounded;
+      statusIcon = LucideIcons.circle_check;
     } else if (isError) {
       statusColor = colorScheme.error;
-      statusIcon = Icons.error_outline_rounded;
+      statusIcon = LucideIcons.circle_alert;
     } else if (isInProgress) {
       statusColor = AppColors.primary;
-      statusIcon = Icons.sync_rounded;
+      statusIcon = LucideIcons.refresh_cw;
     } else {
       statusColor = colorScheme.onSurface.withValues(alpha: 0.55);
-      statusIcon = Icons.insert_drive_file_rounded;
+      statusIcon = LucideIcons.file;
     }
 
     return Container(
@@ -593,7 +594,7 @@ class _FileRow extends StatelessWidget {
                   ),
                 if (isDone) ...[
                   IconButton(
-                    icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
+                    icon: const Icon(LucideIcons.download, color: Colors.blueAccent),
                     tooltip: 'Save',
                     onPressed: () async {
                       final ok = await provider.downloadFileModel(conversion);
@@ -609,7 +610,7 @@ class _FileRow extends StatelessWidget {
                   ),
                   IconButton(
                     icon: Icon(
-                      Icons.ios_share_rounded,
+                      LucideIcons.share_2,
                       color: colorScheme.onSurface.withValues(alpha: 0.65),
                     ),
                     tooltip: 'Share',
@@ -617,7 +618,7 @@ class _FileRow extends StatelessWidget {
                   ),
                 ] else if (!provider.isProcessing && !isInProgress) ...[
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.red, size: 20),
+                    icon: const Icon(LucideIcons.x, color: Colors.red, size: 20),
                     tooltip: 'Remove',
                     onPressed: () => provider.removeFromBatch(index),
                   ),

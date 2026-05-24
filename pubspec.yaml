@@ -61,6 +61,7 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.2.1
   google_nav_bar: ^5.0.7
+  flutter_lucide: ^1.11.0
 
 dev_dependencies:
   flutter_test:

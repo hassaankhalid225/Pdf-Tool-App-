@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pdf_tool/core/constants/app_colors.dart';
@@ -43,7 +44,7 @@ class FavoritesScreen extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.star_rounded, color: Colors.white, size: 22),
+            child: const Icon(LucideIcons.star, color: Colors.white, size: 22),
           ),
         ),
         title: const Text(

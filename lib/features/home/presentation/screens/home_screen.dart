@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pdf_tool/core/constants/app_strings.dart';
 import 'package:pdf_tool/core/constants/tools_data.dart';
 import 'package:pdf_tool/core/utils/responsive_helper.dart';
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   } 
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Expanded(
                           child: _StatCard(
-                            icon: Icons.bolt_rounded,
+                            icon: LucideIcons.zap,
                             label: 'Tools',
                             value: '${ToolsData.allTools.length}',
                             gradient: AppColors.gradientIndigo,
@@ -85,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _StatCard(
-                            icon: Icons.history_rounded,
+                            icon: LucideIcons.history,
                             label: 'Converted',
                             value: '${provider.conversionHistory.length}',
                             gradient: AppColors.gradientPurple,
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _StatCard(
-                            icon: Icons.star_rounded,
+                            icon: LucideIcons.star,
                             label: 'Favorites',
                             value:
                                 '${context.watch<SettingsProvider>().favoriteToolIds.length}',
@@ -118,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ToolCategorySectionWidget(
                   title: AppStrings.categoryFromPdf,
                   description: AppStrings.categoryFromPdfDesc,
-                  icon: Icons.file_upload_outlined,
+                  icon: LucideIcons.file_up,
                   tools: filteredFromPdf,
                   onToolTap: (t) => _handleToolTap(context, t),
                 ),
@@ -132,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ToolCategorySectionWidget(
                   title: AppStrings.categoryToPdf,
                   description: AppStrings.categoryToPdfDesc,
-                  icon: Icons.file_download_outlined,
+                  icon: LucideIcons.file_down,
                   tools: filteredToPdf,
                   onToolTap: (t) => _handleToolTap(context, t),
                 ),
@@ -144,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
                   child: Column(
                     children: [
-                      Icon(Icons.search_off_rounded,
+                      Icon(LucideIcons.search_x,
                           size: 56,
                           color: colorScheme.onSurface.withValues(alpha: 0.35)),
                       const SizedBox(height: 12),
@@ -293,12 +294,12 @@ class _HeroHeader extends StatelessWidget {
               ),
               const Spacer(),
               _CircleIconButton(
-                icon: Icons.notifications_none_rounded,
+                icon: LucideIcons.bell,
                 onTap: () {},
               ),
               const SizedBox(width: 8),
               _CircleIconButton(
-                icon: Icons.settings_outlined,
+                icon: LucideIcons.settings,
                 onTap: onSettingsTap,
               ),
             ],
@@ -389,7 +390,7 @@ class _SearchField extends StatelessWidget {
             color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
           ),
           prefixIcon: Icon(
-            Icons.search_rounded,
+            LucideIcons.search,
             color: theme.colorScheme.primary,
           ),
           suffixIcon: controller.text.isNotEmpty
@@ -398,7 +399,7 @@ class _SearchField extends StatelessWidget {
                     controller.clear();
                     onChanged('');
                   },
-                  icon: const Icon(Icons.close_rounded, size: 18),
+                  icon: const Icon(LucideIcons.x, size: 18),
                 )
               : null,
           border: InputBorder.none,
@@ -476,11 +477,11 @@ class _RecentFileTile extends StatelessWidget {
   const _RecentFileTile({required this.conversion, required this.isDark});
 
   IconData _icon(ConversionType type) {
-    if (type.isToPdf) return Icons.picture_as_pdf_rounded;
-    if (type.name.contains('Word')) return Icons.description_rounded;
-    if (type.name.contains('Excel')) return Icons.table_chart_rounded;
-    if (type.name.contains('Image')) return Icons.image_rounded;
-    return Icons.insert_drive_file_rounded;
+    if (type.isToPdf) return LucideIcons.file_text;
+    if (type.name.contains('Word')) return LucideIcons.file_text;
+    if (type.name.contains('Excel')) return LucideIcons.file_spreadsheet;
+    if (type.name.contains('Image')) return LucideIcons.image;
+    return LucideIcons.file;
   }
 
   List<Color> _gradient(ConversionType type) {
@@ -558,7 +559,7 @@ class _RecentFileTile extends StatelessWidget {
                 ),
                 IconButton(
                   icon: Icon(
-                    Icons.ios_share_rounded,
+                    LucideIcons.share_2,
                     color: colorScheme.onSurface.withValues(alpha: 0.55),
                     size: 20,
                   ),
