@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_tool/core/constants/app_colors.dart';
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
 import 'package:pdf_tool/core/theme/text_styles.dart';
 import 'package:pdf_tool/core/widgets/custom_button.dart';
 
-/// Empty state widget for displaying when there's no content
+/// Empty / error / success states using the modern token palette.
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
   final String? actionText;
   final VoidCallback? onActionPressed;
-  final Color? iconColor;
-  final double? iconSize;
+  final List<Color>? gradient;
+  final IconData? actionIcon;
 
   const EmptyStateWidget({
     super.key,
@@ -20,24 +21,40 @@ class EmptyStateWidget extends StatelessWidget {
     required this.message,
     this.actionText,
     this.onActionPressed,
-    this.iconColor,
-    this.iconSize,
+    this.gradient,
+    this.actionIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final palette = gradient ?? AppColors.gradientBlue;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: iconSize ?? AppDimensions.iconXxl * 1.5,
-              color: iconColor ?? theme.colorScheme.primary.withValues(alpha: 0.3),
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: palette,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: palette.first.withValues(alpha: 0.30),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 44),
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
@@ -47,11 +64,11 @@ class EmptyStateWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               message,
               style: TextStyles.emptyStateMessage.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
               ),
               textAlign: TextAlign.center,
             ),
@@ -60,7 +77,7 @@ class EmptyStateWidget extends StatelessWidget {
               CustomButton(
                 text: actionText!,
                 onPressed: onActionPressed,
-                icon: Icons.add,
+                icon: actionIcon ?? Icons.arrow_forward_rounded,
               ),
             ],
           ],
@@ -70,56 +87,55 @@ class EmptyStateWidget extends StatelessWidget {
   }
 }
 
-/// No files empty state
+/// Pre-built no-files state, kept for compatibility.
 class NoFilesEmptyState extends StatelessWidget {
   final VoidCallback? onBrowseFiles;
-
-  const NoFilesEmptyState({
-    super.key,
-    this.onBrowseFiles,
-  });
+  const NoFilesEmptyState({super.key, this.onBrowseFiles});
 
   @override
   Widget build(BuildContext context) {
     return EmptyStateWidget(
-      icon: Icons.folder_open,
+      icon: Icons.folder_open_rounded,
       title: 'No File Selected',
-      message: 'Select a file to get started with conversion',
+      message: 'Pick a file from your device to get started',
+      gradient: AppColors.gradientPurple,
       actionText: onBrowseFiles != null ? 'Browse Files' : null,
       onActionPressed: onBrowseFiles,
+      actionIcon: Icons.upload_file_rounded,
     );
   }
 }
 
-/// No history empty state
 class NoHistoryEmptyState extends StatelessWidget {
   const NoHistoryEmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const EmptyStateWidget(
-      icon: Icons.history,
-      title: 'No Conversion History',
-      message: 'Your conversion history will appear here once you start converting files',
+      icon: Icons.history_rounded,
+      title: 'Nothing here yet',
+      message:
+          'Your converted files will land here so you can find them anytime.',
+      gradient: AppColors.gradientBlue,
     );
   }
 }
 
-/// No favorites empty state
 class NoFavoritesEmptyState extends StatelessWidget {
   const NoFavoritesEmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const EmptyStateWidget(
-      icon: Icons.star_border,
+      icon: Icons.star_rounded,
       title: 'No Favorite Tools',
-      message: 'Mark tools as favorites for quick access',
+      message:
+          'Tap the bookmark on any tool to pin it for one-tap access later.',
+      gradient: AppColors.gradientOrange,
     );
   }
 }
 
-/// Error state widget
 class ErrorStateWidget extends StatelessWidget {
   final String title;
   final String message;
@@ -133,54 +149,23 @@ class ErrorStateWidget extends StatelessWidget {
     required this.message,
     this.actionText,
     this.onActionPressed,
-    this.icon = Icons.error_outline,
+    this.icon = Icons.error_outline_rounded,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconXxl * 1.5,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Text(
-              title,
-              style: TextStyles.emptyStateTitle.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              message,
-              style: TextStyles.emptyStateMessage.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (actionText != null && onActionPressed != null) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              CustomButton(
-                text: actionText!,
-                onPressed: onActionPressed,
-                icon: Icons.refresh,
-              ),
-            ],
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: icon,
+      title: title,
+      message: message,
+      gradient: const [Color(0xFFEF4444), Color(0xFFF97316)],
+      actionText: actionText,
+      onActionPressed: onActionPressed,
+      actionIcon: Icons.refresh_rounded,
     );
   }
 }
 
-/// Success state widget
 class SuccessStateWidget extends StatelessWidget {
   final String title;
   final String message;
@@ -197,50 +182,14 @@ class SuccessStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingLg),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.check_circle,
-                size: AppDimensions.iconXxl * 1.5,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Text(
-              title,
-              style: TextStyles.emptyStateTitle.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              message,
-              style: TextStyles.emptyStateMessage.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (actionText != null && onActionPressed != null) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              CustomButton(
-                text: actionText!,
-                onPressed: onActionPressed,
-              ),
-            ],
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: Icons.check_circle_rounded,
+      title: title,
+      message: message,
+      gradient: const [Color(0xFF10B981), Color(0xFF06B6D4)],
+      actionText: actionText,
+      onActionPressed: onActionPressed,
+      actionIcon: Icons.check_rounded,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:pdf_tool/core/constants/enums.dart';
 
 /// Model representing a file conversion operation
@@ -58,12 +59,14 @@ class ConversionModel {
 
   /// Get the input file name
   String get inputFileName {
-    return inputFile.path.split('/').last;
+    return p.basename(inputFile.path);
   }
 
   /// Get the output file name
   String? get outputFileName {
-    return outputFile?.path.split('/').last;
+    final file = outputFile;
+    if (file == null) return null;
+    return p.basename(file.path);
   }
 
   /// Get the input file size in bytes

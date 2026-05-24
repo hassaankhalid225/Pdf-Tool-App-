@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import 'package:pdf_tool/core/constants/app_dimensions.dart';
-import 'package:pdf_tool/core/constants/app_colors.dart';
 import 'package:pdf_tool/core/utils/responsive_helper.dart';
 import 'package:pdf_tool/features/home/models/tool_model.dart';
 import 'package:pdf_tool/features/home/presentation/widgets/tool_card_widget.dart';
@@ -21,97 +21,102 @@ class ToolCategoryScreen extends StatefulWidget {
 }
 
 class _ToolCategoryScreenState extends State<ToolCategoryScreen> {
-  String _searchQuery = '';
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
-    final filteredTools = widget.tools.where((tool) {
-      return tool.title.toLowerCase().contains(_searchQuery) ||
-          tool.description.toLowerCase().contains(_searchQuery);
+    final horizontal = ResponsiveHelper.getHorizontalPadding(context);
+
+    final filtered = widget.tools.where((tool) {
+      if (_query.isEmpty) return true;
+      final q = _query.toLowerCase();
+      return tool.title.toLowerCase().contains(q) ||
+          tool.description.toLowerCase().contains(q) ||
+          tool.subtitle.toLowerCase().contains(q);
     }).toList();
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          widget.title, 
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: Text(
+          widget.title,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
         iconTheme: IconThemeData(color: colorScheme.onSurface),
       ),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: ResponsiveHelper.getHorizontalPadding(context),
-                vertical: 16,
-              ),
+              padding: EdgeInsets.fromLTRB(horizontal, 8, horizontal, 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.brightness == Brightness.dark 
-                      ? colorScheme.surface 
-                      : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: theme.brightness == Brightness.light
-                      ? Border.all(color: Colors.grey[200]!)
-                      : null,
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value.toLowerCase();
-                    });
-                  },
-                  style: TextStyle(color: colorScheme.onSurface),
+                  onChanged: (v) => setState(() => _query = v),
                   decoration: InputDecoration(
-                    hintText: 'Search tools in this category...',
-                    hintStyle: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.4), 
-                      fontSize: 14,
-                    ),
+                    hintText: 'Search ${widget.title.toLowerCase()}…',
                     prefixIcon: Icon(
-                      Icons.search, 
-                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      Icons.search_rounded,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    filled: false,
                   ),
                 ),
               ),
             ),
             Expanded(
-              child: filteredTools.isEmpty
+              child: filtered.isEmpty
                   ? Center(
-                      child: Text(
-                        'No tools found',
-                        style: TextStyle(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 48,
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No tools match "$_query"',
+                            style: TextStyle(
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : GridView.builder(
-                      padding: EdgeInsets.all(ResponsiveHelper.getHorizontalPadding(context)),
+                      padding: EdgeInsets.symmetric(horizontal: horizontal),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(context),
+                        crossAxisCount:
+                            ResponsiveHelper.getGridCrossAxisCount(context),
                         crossAxisSpacing: AppDimensions.gridSpacing,
                         mainAxisSpacing: AppDimensions.gridSpacing,
-                        childAspectRatio: ResponsiveHelper.getCardAspectRatio(context),
+                        childAspectRatio:
+                            ResponsiveHelper.getCardAspectRatio(context),
                       ),
-                      itemCount: filteredTools.length,
+                      itemCount: filtered.length,
                       itemBuilder: (context, index) {
-                        final tool = filteredTools[index];
+                        final tool = filtered[index];
                         return ToolCardWidget(
                           tool: tool,
-                          onTap: () => AppRoutes.navigateToConversion(context, tool.conversionType),
+                          onTap: () => AppRoutes.navigateToConversion(
+                            context,
+                            tool.conversionType,
+                          ),
                         );
                       },
                     ),

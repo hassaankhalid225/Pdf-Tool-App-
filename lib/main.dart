@@ -10,7 +10,6 @@ import 'package:pdf_tool/core/providers/navigation_provider.dart';
 import 'package:pdf_tool/core/constants/app_colors.dart';
 import 'package:pdf_tool/core/services/conversion_service.dart';
 import 'package:pdf_tool/core/services/file_service.dart';
-import 'package:pdf_tool/core/services/permission_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,21 +54,22 @@ class MyApp extends StatelessWidget {
           create: (_) => ConversionProvider(
             conversionService: ConversionService(),
             fileService: FileService(),
-            permissionService: PermissionService(),
           ),
         ),
         // Add other providers here as needed
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
-          // Set system UI overlay style based on theme
           final isDark = settings.isDarkMode;
           SystemChrome.setSystemUIOverlayStyle(
             SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
               statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-              systemNavigationBarColor: isDark ? AppColors.backgroundDark : Colors.white,
-              systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+              statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+              systemNavigationBarColor:
+                  isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+              systemNavigationBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
             ),
           );
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:share_plus/share_plus.dart';
@@ -50,13 +51,15 @@ class FileService {
   /// Save file to downloads directory
   Future<void> saveFile(File file, String fileName) async {
     try {
-      // Get downloads directory
       final directory = await getDownloadPath();
-      
-      // Create destination path
-      final destinationPath = '$directory/$fileName';
-      
-      // Copy file to downloads
+      final safeName = p.basename(fileName);
+      final destinationPath = p.join(directory, safeName);
+
+      final destinationDir = Directory(p.dirname(destinationPath));
+      if (!await destinationDir.exists()) {
+        await destinationDir.create(recursive: true);
+      }
+
       await file.copy(destinationPath);
     } catch (e) {
       throw Exception('Failed to save file: ${e.toString()}');
@@ -66,10 +69,9 @@ class FileService {
   /// Share file using platform share sheet
   Future<void> shareFile(File file) async {
     try {
-      final result = await Share.shareXFiles(
-        [XFile(file.path)],
+      final result = await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)]),
       );
-
       if (result.status == ShareResultStatus.unavailable) {
         throw Exception('Sharing is not available on this platform');
       }
@@ -110,30 +112,31 @@ class FileService {
       Directory? directory;
 
       if (Platform.isAndroid) {
-        // For Android, use external storage directory
         directory = await getExternalStorageDirectory();
-        
-        // Navigate to Downloads folder
         if (directory != null) {
-          final downloadPath = directory.path.replaceAll('Android/data/com.example.pdf_tool/files', 'Download');
+          final downloadPath = p.join(
+            directory.path.split(p.join('Android', 'data')).first,
+            'Download',
+          );
           final downloadDir = Directory(downloadPath);
-          
           if (!await downloadDir.exists()) {
             await downloadDir.create(recursive: true);
           }
-          
           return downloadPath;
         }
       } else if (Platform.isIOS) {
-        // For iOS, use documents directory
         directory = await getApplicationDocumentsDirectory();
       } else {
-        // For other platforms, use downloads directory
         directory = await getDownloadsDirectory();
+        directory ??= await getApplicationDocumentsDirectory();
       }
 
       if (directory == null) {
         throw Exception('Could not find download directory');
+      }
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
       }
 
       return directory.path;

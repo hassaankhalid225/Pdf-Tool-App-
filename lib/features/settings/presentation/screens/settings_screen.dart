@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pdf_tool/core/providers/settings_provider.dart';
+
 import 'package:pdf_tool/core/constants/app_colors.dart';
-import 'package:pdf_tool/features/settings/presentation/screens/edit_profile_screen.dart';
-import 'package:pdf_tool/features/settings/presentation/screens/change_password_screen.dart';
-import 'package:pdf_tool/features/settings/presentation/screens/subscription_screen.dart';
+import 'package:pdf_tool/core/constants/app_strings.dart';
+import 'package:pdf_tool/core/providers/settings_provider.dart';
+import 'package:pdf_tool/features/about/presentation/screens/about_screen.dart';
 import 'package:pdf_tool/features/settings/presentation/screens/help_screen.dart';
 import 'package:pdf_tool/features/settings/presentation/screens/legal_screen.dart';
-import 'package:pdf_tool/features/settings/presentation/screens/link_accounts_screen.dart';
 
-/// Settings screen for app configuration
+/// Settings screen — theme-aware, lightweight, no fake account UI.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -17,188 +16,192 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Profile', 
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
+        title: const Text(
+          'Settings',
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: colorScheme.onSurface),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Profile Header
-              _buildProfileHeader(context),
-              const SizedBox(height: 32),
-              
-              // Account Settings
-              _buildSectionHeader(context, 'ACCOUNT SETTINGS'),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const ChangePasswordScreen())),
-                child: _buildSettingItem(context, Icons.lock, 'Change Password', color: Colors.blue),
+              const _Hero(),
+              const SizedBox(height: 28),
+              _SectionHeader(context, 'Appearance'),
+              Consumer<SettingsProvider>(
+                builder: (context, s, _) {
+                  return _SettingTile(
+                    icon: Icons.dark_mode_outlined,
+                    iconGradient: const [Color(0xFF1E293B), Color(0xFF334155)],
+                    title: 'Dark mode',
+                    subtitle: 'Switch to the dark Material 3 theme.',
+                    trailing: Switch.adaptive(
+                      value: s.isDarkMode,
+                      onChanged: (v) => s.setDarkMode(v),
+                    ),
+                  );
+                },
               ),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const LinkAccountsScreen())),
-                child: _buildSettingItem(context, Icons.link, 'Link Accounts', color: Colors.purple),
-              ),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const SubscriptionScreen())),
-                child: _buildSettingItem(
-                  context,
-                  Icons.workspace_premium, 
-                  'Subscription Plan', 
-                  color: Colors.orange, 
-                  trailingText: 'Manage',
-                  trailingTextColor: Colors.blue,
-                ),
-              ),
-              
+
               const SizedBox(height: 24),
-              
-              // App Settings
-              _buildSectionHeader(context, 'APP SETTINGS'),
+              _SectionHeader(context, 'Conversion preferences'),
               Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  return _buildSettingItem(
-                    context,
-                    Icons.dark_mode, 
-                    'Dark Mode', 
-                    color: Colors.blueGrey,
-                    trailing: Switch(
-                      value: settings.isDarkMode,
-                      activeColor: colorScheme.primary,
-                      onChanged: (value) => settings.setDarkMode(value),
-                    ),
-                  );
-                },
-              ),
-              Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  return _buildSettingItem(
-                    context,
-                    Icons.notifications, 
-                    'Notifications', 
-                    color: Colors.redAccent,
-                    trailing: Switch(
-                      value: settings.showNotifications,
-                      activeColor: colorScheme.primary,
-                      onChanged: (value) => settings.setNotifications(value),
-                    ),
-                  );
-                },
-              ),
-              Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  return InkWell(
-                    onTap: () => _showLanguageDialog(context),
-                    child: _buildSettingItem(
-                      context,
-                      Icons.language, 
-                      'Language', 
-                      color: Colors.teal, 
-                      trailingText: _getLanguageName(settings.language),
-                    ),
-                  );
-                },
-              ),
-              Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  return InkWell(
+                builder: (context, s, _) {
+                  return _SettingTile(
+                    icon: Icons.high_quality_outlined,
+                    iconGradient: AppColors.gradientBlue,
+                    title: 'Default quality',
+                    subtitle: _qualityLabel(s.defaultQuality),
+                    trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => _showQualityDialog(context),
-                    child: _buildSettingItem(
-                      context,
-                      Icons.high_quality, 
-                      'Quality', 
-                      color: Colors.blue, 
-                      trailingText: _getQualityName(settings.defaultQuality),
+                  );
+                },
+              ),
+              Consumer<SettingsProvider>(
+                builder: (context, s, _) {
+                  return _SettingTile(
+                    icon: Icons.folder_open_rounded,
+                    iconGradient: AppColors.gradientOrange,
+                    title: 'Save location',
+                    subtitle: _locationLabel(s.storageLocation),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => _showStorageDialog(context),
+                  );
+                },
+              ),
+              Consumer<SettingsProvider>(
+                builder: (context, s, _) {
+                  return _SettingTile(
+                    icon: Icons.auto_awesome_motion_outlined,
+                    iconGradient: AppColors.gradientGreen,
+                    title: 'Open file after convert',
+                    subtitle: 'Launch the result in the default app.',
+                    trailing: Switch.adaptive(
+                      value: s.autoOpenFile,
+                      onChanged: (v) => s.setAutoOpenFile(v),
                     ),
                   );
                 },
               ),
               Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  return InkWell(
-                    onTap: () => _showStorageLocationDialog(context),
-                    child: _buildSettingItem(
-                      context,
-                      Icons.folder_open, 
-                      'Storage', 
-                      color: Colors.amber, 
-                      trailingText: _getStorageLocationName(settings.storageLocation),
+                builder: (context, s, _) {
+                  return _SettingTile(
+                    icon: Icons.history_rounded,
+                    iconGradient: AppColors.gradientPurple,
+                    title: 'Keep conversion history',
+                    subtitle: 'Show recent files on the home screen.',
+                    trailing: Switch.adaptive(
+                      value: s.saveHistory,
+                      onChanged: (v) => s.setSaveHistory(v),
                     ),
                   );
                 },
               ),
-              InkWell(
-                onTap: () => _showResetDialog(context),
-                child: _buildSettingItem(context, Icons.restore, 'Reset Settings', color: Colors.red),
-              ),
-              
+
               const SizedBox(height: 24),
-              
-              // Support
-              _buildSectionHeader(context, 'SUPPORT'),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const HelpScreen())),
-                child: _buildSettingItem(context, Icons.help, 'Help & FAQ', color: Colors.green),
-              ),
-              InkWell(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (c) => AlertDialog(
-                      title: const Text('Contact Us'),
-                      content: const Text('Please email us at support@pdftool.app for any inquiries.'),
-                      actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('OK'))],
-                    ),
-                  );
-                }, 
-                child: _buildSettingItem(context, Icons.email, 'Contact Us', color: Colors.indigo),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Legal
-              _buildSectionHeader(context, 'LEGAL'),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const LegalScreen(title: 'Privacy Policy', content: 'Privacy Policy Content Here...'))),
-                child: _buildSettingItem(context, Icons.security, 'Privacy Policy', color: Colors.blueGrey),
-              ),
-              InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const LegalScreen(title: 'Terms of Service', content: 'Terms of Service Content Here...'))),
-                child: _buildSettingItem(context, Icons.description, 'Terms of Service', color: Colors.blueGrey),
-              ),
-              
-              const SizedBox(height: 40),
-              
-              // Sign Out Button
-              _buildSignOutButton(context),
-              
-              const SizedBox(height: 16),
-              Text(
-                'App Version 2.4.0',
-                style: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.5), 
-                  fontSize: 12,
+              _SectionHeader(context, 'Support'),
+              _SettingTile(
+                icon: Icons.help_outline_rounded,
+                iconGradient: AppColors.gradientCyan,
+                title: 'Help & FAQ',
+                subtitle: 'How tools work, tips, common problems.',
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelpScreen()),
                 ),
               ),
-              const SizedBox(height: 32),
+              _SettingTile(
+                icon: Icons.info_outline_rounded,
+                iconGradient: AppColors.gradientIndigo,
+                title: 'About this app',
+                subtitle: 'Version, credits, licenses.',
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              _SectionHeader(context, 'Legal'),
+              _SettingTile(
+                icon: Icons.privacy_tip_outlined,
+                iconGradient: const [Color(0xFF64748B), Color(0xFF94A3B8)],
+                title: 'Privacy Policy',
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LegalScreen(
+                      title: 'Privacy Policy',
+                      content:
+                          'Your files never leave your device. Every conversion runs on-device, '
+                          'so the PDFs, Word documents, spreadsheets and images you process stay private. '
+                          'We do not collect, transmit, or share your file contents.',
+                    ),
+                  ),
+                ),
+              ),
+              _SettingTile(
+                icon: Icons.description_outlined,
+                iconGradient: const [Color(0xFF64748B), Color(0xFF94A3B8)],
+                title: 'Terms of Service',
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LegalScreen(
+                      title: 'Terms of Service',
+                      content:
+                          'PDF Tools Pro is provided "as is" without warranty. '
+                          'By using the app you agree to use it responsibly and in accordance with '
+                          'applicable laws. You remain responsible for your own files — please keep '
+                          'backups before converting important documents.',
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              _SettingTile(
+                icon: Icons.restore_rounded,
+                iconGradient: const [Color(0xFFEF4444), Color(0xFFF97316)],
+                title: 'Reset settings',
+                subtitle: 'Restore the default preferences.',
+                onTap: () => _showResetDialog(context),
+              ),
+
+              const SizedBox(height: 18),
+              Center(
+                child: Text(
+                  AppStrings.appName,
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+              Center(
+                child: Text(
+                  AppStrings.appVersion,
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    fontSize: 11,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -206,224 +209,21 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return Column(
-      children: [
-        Stack(
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person, size: 60, color: Colors.white),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const EditProfileScreen())),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: theme.brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[200],
-                    shape: BoxShape.circle,
-                    border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
-                  ),
-                  child: Icon(
-                    Icons.edit, 
-                    size: 14, 
-                    color: theme.brightness == Brightness.dark ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Alex Morgan',
-          style: TextStyle(
-            fontSize: 20, 
-            fontWeight: FontWeight.bold, 
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'alex.morgan@example.com',
-          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            'PRO Member',
-            style: TextStyle(
-              color: colorScheme.primary, 
-              fontSize: 12, 
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // ─────────────────────── helpers ───────────────────────
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(bottom: 12, top: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingItem(
-    BuildContext context,
-    IconData icon, 
-    String title, {
-    required Color color, 
-    Widget? trailing,
-    String? trailingText,
-    Color? trailingTextColor,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color ?? theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: colorScheme.onSurface, 
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        trailing: trailing ?? Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (trailingText != null)
-              Text(
-                trailingText,
-                style: TextStyle(
-                  color: trailingTextColor ?? colorScheme.onSurface.withValues(alpha: 0.4),
-                  fontSize: 14,
-                ),
-              ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right, 
-              color: colorScheme.onSurface.withValues(alpha: 0.3), 
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignOutButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-      ),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(16),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.logout, color: Colors.redAccent),
-            SizedBox(width: 12),
-            Text(
-              'Sign Out',
-              style: TextStyle(
-                color: Colors.redAccent, 
-                fontWeight: FontWeight.bold, 
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-  String _getLanguageName(String code) {
-    switch (code) {
-      case 'en':
-        return 'English';
-      case 'es':
-        return 'Español';
-      case 'fr':
-        return 'Français';
-      case 'de':
-        return 'Deutsch';
-      default:
-        return 'English';
-    }
-  }
-
-  String _getQualityName(String quality) {
-    switch (quality) {
+  String _qualityLabel(String q) {
+    switch (q) {
       case 'low':
-        return 'Low (Smaller file size)';
+        return 'Low — smaller files, faster';
       case 'medium':
-        return 'Medium (Balanced)';
-      case 'high':
-        return 'High (Best quality)';
+        return 'Medium — balanced';
       default:
-        return 'High (Best quality)';
+        return 'High — best quality';
     }
   }
 
-  String _getStorageLocationName(String location) {
-    switch (location) {
-      case 'downloads':
-        return 'Downloads folder';
+  String _locationLabel(String loc) {
+    switch (loc) {
       case 'documents':
         return 'Documents folder';
       case 'custom':
@@ -433,187 +233,319 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  void _showLanguageDialog(BuildContext context) {
-    final settings = context.read<SettingsProvider>();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('Select Language', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildLanguageOption(context, 'en', 'English', settings),
-            _buildLanguageOption(context, 'es', 'Español', settings),
-            _buildLanguageOption(context, 'fr', 'Français', settings),
-            _buildLanguageOption(context, 'de', 'Deutsch', settings),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageOption(
-    BuildContext context,
-    String code,
-    String name,
-    SettingsProvider settings,
-  ) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        unselectedWidgetColor: Colors.grey,
-      ),
-      child: RadioListTile<String>(
-        title: Text(name, style: const TextStyle(color: Colors.white)),
-        value: code,
-        groupValue: settings.language,
-        activeColor: AppColors.primary,
-        onChanged: (value) {
-          if (value != null) {
-            settings.setLanguage(value);
-            Navigator.pop(context);
-          }
-        },
-      ),
-    );
-  }
-
   void _showQualityDialog(BuildContext context) {
     final settings = context.read<SettingsProvider>();
-    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('Select Quality', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildQualityOption(context, 'low', 'Low', settings),
-            _buildQualityOption(context, 'medium', 'Medium', settings),
-            _buildQualityOption(context, 'high', 'High', settings),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Default quality'),
+          contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _quality(ctx, 'high', 'High',
+                  'Best quality, slightly larger files', settings),
+              _quality(ctx, 'medium', 'Medium',
+                  'Balanced size & quality', settings),
+              _quality(ctx, 'low', 'Low',
+                  'Smaller files, faster conversion', settings),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Done'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildQualityOption(
-    BuildContext context,
-    String quality,
-    String name,
-    SettingsProvider settings,
-  ) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        unselectedWidgetColor: Colors.grey,
-      ),
-      child: RadioListTile<String>(
-        title: Text(name, style: const TextStyle(color: Colors.white)),
-        subtitle: Text(_getQualityName(quality), style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        value: quality,
-        groupValue: settings.defaultQuality,
-        activeColor: AppColors.primary,
-        onChanged: (value) {
-          if (value != null) {
-            settings.setDefaultQuality(value);
-            Navigator.pop(context);
-          }
-        },
-      ),
+  Widget _quality(BuildContext ctx, String value, String label, String desc,
+      SettingsProvider settings) {
+    final selected = settings.defaultQuality == value;
+    return ListTile(
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(desc),
+      trailing: selected
+          ? Icon(Icons.check_circle_rounded,
+              color: Theme.of(ctx).colorScheme.primary)
+          : Icon(Icons.radio_button_unchecked_rounded,
+              color: Theme.of(ctx).colorScheme.outline),
+      onTap: () {
+        settings.setDefaultQuality(value);
+        Navigator.pop(ctx);
+      },
     );
   }
 
-  void _showStorageLocationDialog(BuildContext context) {
+  void _showStorageDialog(BuildContext context) {
     final settings = context.read<SettingsProvider>();
-    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('Select Storage Location', style: TextStyle(color: Colors.white)),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Save location'),
+        contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStorageOption(context, 'downloads', 'Downloads', settings),
-            _buildStorageOption(context, 'documents', 'Documents', settings),
-            _buildStorageOption(context, 'custom', 'Custom', settings),
+            _storage(ctx, 'downloads', 'Downloads', settings),
+            _storage(ctx, 'documents', 'Documents', settings),
+            _storage(ctx, 'custom', 'Custom', settings),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Done'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStorageOption(
-    BuildContext context,
-    String location,
-    String name,
-    SettingsProvider settings,
-  ) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        unselectedWidgetColor: Colors.grey,
-      ),
-      child: RadioListTile<String>(
-        title: Text(name, style: const TextStyle(color: Colors.white)),
-        value: location,
-        groupValue: settings.storageLocation,
-        activeColor: AppColors.primary,
-        onChanged: (value) {
-          if (value != null) {
-            settings.setStorageLocation(value);
-            Navigator.pop(context);
-          }
-        },
-      ),
+  Widget _storage(BuildContext ctx, String value, String label,
+      SettingsProvider settings) {
+    final selected = settings.storageLocation == value;
+    return ListTile(
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: selected
+          ? Icon(Icons.check_circle_rounded,
+              color: Theme.of(ctx).colorScheme.primary)
+          : Icon(Icons.radio_button_unchecked_rounded,
+              color: Theme.of(ctx).colorScheme.outline),
+      onTap: () {
+        settings.setStorageLocation(value);
+        Navigator.pop(ctx);
+      },
     );
   }
 
   void _showResetDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset Settings'),
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.restore_rounded, size: 36),
+        title: const Text('Reset settings?'),
         content: const Text(
-          'Are you sure you want to reset all settings to default values?',
+          'This will restore quality, save location and other preferences to their defaults. '
+          'Your converted files are not affected.',
+          textAlign: TextAlign.center,
         ),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          FilledButton.tonal(
             onPressed: () {
               context.read<SettingsProvider>().resetSettings();
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Settings reset to default'),
+                  content: Text('Settings reset'),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
             child: const Text('Reset'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────── widgets ───────────────────────
+
+class _Hero extends StatelessWidget {
+  const _Hero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: AppColors.gradientBlue,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.30),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(
+              Icons.picture_as_pdf_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.appName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Privacy-first conversions, on your device.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  // ignore: prefer_const_constructors_in_immutables
+  _SectionHeader(this.context, this.title);
+
+  final BuildContext context;
+  final String title;
+
+  @override
+  Widget build(BuildContext _) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10, top: 6),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.6,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingTile extends StatelessWidget {
+  final IconData icon;
+  final List<Color> iconGradient;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  const _SettingTile({
+    required this.icon,
+    required this.iconGradient,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: theme.cardTheme.color ?? colorScheme.surface,
+        elevation: 0,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.10),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: iconGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconGradient.first.withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 19),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14.5,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: TextStyle(
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

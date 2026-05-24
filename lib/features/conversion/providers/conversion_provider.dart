@@ -1,363 +1,458 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:pdf_tool/core/constants/app_strings.dart';
 import 'package:pdf_tool/core/constants/enums.dart';
 import 'package:pdf_tool/features/conversion/models/conversion_model.dart';
 import 'package:pdf_tool/core/services/conversion_service.dart';
 import 'package:pdf_tool/core/services/file_service.dart';
-import 'package:pdf_tool/core/services/permission_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
-/// Provider for managing conversion state and operations
+/// Provider for managing conversion state and operations.
+/// All tools use the same batch queue: one or many files, one flow.
 class ConversionProvider extends ChangeNotifier {
   final ConversionService _conversionService;
   final FileService _fileService;
-  final PermissionService _permissionService;
 
   ConversionProvider({
     required ConversionService conversionService,
     required FileService fileService,
-    required PermissionService permissionService,
   })  : _conversionService = conversionService,
-        _fileService = fileService,
-        _permissionService = permissionService {
+        _fileService = fileService {
     _loadHistory();
   }
 
-  // State variables
-  ConversionModel? _currentConversion;
   final List<ConversionModel> _batchConversions = [];
   final List<ConversionModel> _conversionHistory = [];
   bool _isProcessing = false;
+  bool _isSelectingFiles = false;
+  String? _loadingMessage;
+  String? _globalErrorMessage;
 
-  // Getters
-  ConversionModel? get currentConversion => _currentConversion;
   List<ConversionModel> get batchConversions => List.unmodifiable(_batchConversions);
   List<ConversionModel> get conversionHistory => List.unmodifiable(_conversionHistory);
   bool get isProcessing => _isProcessing;
-  bool get isBatchProcessing => _batchConversions.isNotEmpty;
-  
-  ConversionStatus get status => _currentConversion?.status ?? ConversionStatus.idle;
-  File? get selectedFile => _currentConversion?.inputFile;
-  File? get resultFile => _currentConversion?.outputFile;
-  double get progress => _currentConversion?.progress ?? 0.0;
-  String? get errorMessage => _currentConversion?.errorMessage;
-  bool get hasFile => _currentConversion?.inputFile != null || _batchConversions.isNotEmpty;
-  bool get hasResult => _currentConversion?.outputFile != null || _batchConversions.any((c) => c.outputFile != null);
+  bool get isSelectingFiles => _isSelectingFiles;
+  bool get isLoading => _isSelectingFiles || _isProcessing;
+  String? get loadingMessage => _loadingMessage;
+  bool get hasFile => _batchConversions.isNotEmpty;
+  bool get hasResult => _batchConversions.any((c) => c.outputFile != null);
+  String? get globalErrorMessage => _globalErrorMessage;
 
-  /// Select a file for conversion
-  Future<bool> selectFile(List<String> extensions, ConversionType type) async {
+  /// Kept for compatibility — same as [hasFile].
+  bool get isBatchProcessing => hasFile;
+
+  ConversionStatus get status {
+    if (_batchConversions.isEmpty) return ConversionStatus.idle;
+    if (_batchConversions.any((c) => c.status == ConversionStatus.converting)) {
+      return ConversionStatus.converting;
+    }
+    if (_batchConversions.every((c) => c.status == ConversionStatus.completed)) {
+      return ConversionStatus.completed;
+    }
+    if (_batchConversions.any((c) => c.status == ConversionStatus.error)) {
+      return ConversionStatus.error;
+    }
+    return ConversionStatus.idle;
+  }
+
+  double get progress {
+    if (_batchConversions.isEmpty) return 0.0;
+    final total = _batchConversions.fold<double>(0, (sum, c) => sum + c.progress);
+    return total / _batchConversions.length;
+  }
+
+  String? get errorMessage {
+    if (_globalErrorMessage != null) return _globalErrorMessage;
     try {
-      final file = await _fileService.pickFile(extensions);
-      
-      if (file != null) {
-        // Validate file
-        final isValid = await _conversionService.validateFile(file, extensions);
-        
-        if (!isValid) {
-          _setError('Invalid file format. Please select a valid file.');
-          return false;
-        }
+      return _batchConversions.firstWhere((c) => c.errorMessage != null).errorMessage;
+    } catch (_) {
+      return null;
+    }
+  }
 
-        // Create new conversion model
-        _currentConversion = ConversionModel(
-          id: const Uuid().v4(),
-          type: type,
-          inputFile: file,
-          status: ConversionStatus.idle,
-          startTime: DateTime.now(),
-        );
+  int get completedCount =>
+      _batchConversions.where((c) => c.status == ConversionStatus.completed).length;
 
+  bool get isAllComplete =>
+      _batchConversions.isNotEmpty &&
+      _batchConversions.every((c) => c.status == ConversionStatus.completed);
+
+  /// Pick one file and add to the queue (same flow as multiple).
+  Future<bool> selectFile(List<String> extensions, ConversionType type) async {
+    return selectFiles(extensions, type);
+  }
+
+  /// Pick one or more files — always uses the shared batch queue.
+  Future<bool> selectFiles(List<String> extensions, ConversionType type) async {
+    if (_isSelectingFiles || _isProcessing) return false;
+
+    try {
+      _globalErrorMessage = null;
+      _isSelectingFiles = true;
+      _loadingMessage = AppStrings.preparingFiles;
+      notifyListeners();
+
+      final files = await _fileService.pickFiles(extensions);
+      if (files.isEmpty) {
+        _clearLoading();
         notifyListeners();
-        return true;
+        return false;
       }
-      return false;
+
+      _batchConversions.clear();
+      _loadingMessage = AppStrings.validatingFiles;
+      notifyListeners();
+
+      await _addFilesToBatch(files, type, onProgress: (current, total) {
+        _loadingMessage = '${AppStrings.validatingFiles} ($current/$total)';
+        notifyListeners();
+      });
+
+      _clearLoading();
+
+      if (_batchConversions.isEmpty) {
+        _globalErrorMessage = 'No valid files selected. Check format and size (max 50 MB).';
+        notifyListeners();
+        return false;
+      }
+      notifyListeners();
+      return true;
     } catch (e) {
-      _setError('Failed to select file: ${e.toString()}');
+      _clearLoading();
+      _globalErrorMessage = 'Failed to select files: ${e.toString()}';
+      notifyListeners();
       return false;
     }
   }
 
-  /// Convert the selected file
-  Future<void> convertFile(ConversionType type, {String quality = 'high'}) async {
-    if (_currentConversion == null) {
-      _setError('No file selected');
-      return;
-    }
+  /// Add more files to the current queue.
+  Future<void> addMoreFiles(List<String> extensions, ConversionType type) async {
+    if (_isSelectingFiles || _isProcessing) return;
 
-    if (_isProcessing) {
-      return;
-    }
-
-    _isProcessing = true;
-    
     try {
-      // Update conversion type and status
-      _currentConversion = _currentConversion!.copyWith(
-        type: type,
-        status: ConversionStatus.converting,
-        progress: 0.0,
-      );
+      _globalErrorMessage = null;
+      _isSelectingFiles = true;
+      _loadingMessage = AppStrings.preparingFiles;
       notifyListeners();
 
-      // Simulate progress updates
-      _updateProgress(0.2);
-      await Future.delayed(const Duration(milliseconds: 500));
+      final files = await _fileService.pickFiles(extensions);
+      if (files.isNotEmpty) {
+        _loadingMessage = AppStrings.validatingFiles;
+        notifyListeners();
+        await _addFilesToBatch(files, type, onProgress: (current, total) {
+          _loadingMessage = '${AppStrings.validatingFiles} ($current/$total)';
+          notifyListeners();
+        });
+      }
+      _clearLoading();
+      notifyListeners();
+    } catch (e) {
+      _clearLoading();
+      _globalErrorMessage = 'Failed to add files: ${e.toString()}';
+      notifyListeners();
+    }
+  }
 
-      // Perform conversion based on type
-      File? outputFile;
-      
-      switch (type) {
-        case ConversionType.pdfToWord:
-          outputFile = await _conversionService.pdfToWord(_currentConversion!.inputFile);
-          break;
-        case ConversionType.pdfToExcel:
-          outputFile = await _conversionService.pdfToExcel(_currentConversion!.inputFile);
-          break;
-        case ConversionType.pdfToImage:
-          outputFile = await _conversionService.pdfToImage(
-            _currentConversion!.inputFile,
-            ImageFormat.png,
-            quality: quality,
-          );
-          break;
-        case ConversionType.pdfToText:
-          outputFile = await _conversionService.pdfToText(_currentConversion!.inputFile);
-          break;
-        case ConversionType.imageToPdf:
-          outputFile = await _conversionService.imageToPdf(
-            _currentConversion!.inputFile,
-            quality: quality,
-          );
-          break;
-        case ConversionType.wordToPdf:
-          outputFile = await _conversionService.wordToPdf(_currentConversion!.inputFile);
-          break;
-        default:
-          throw UnimplementedError('Conversion type ${type.displayName} not yet implemented');
+  void _clearLoading() {
+    _isSelectingFiles = false;
+    _loadingMessage = null;
+  }
+
+  Future<void> _addFilesToBatch(
+    List<File> files,
+    ConversionType type, {
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final extensions = type.supportedInputFormats;
+    final total = files.length;
+
+    for (var i = 0; i < files.length; i++) {
+      onProgress?.call(i + 1, total);
+      final file = files[i];
+      final exists = _batchConversions.any((c) => c.inputFile.path == file.path);
+      if (exists) continue;
+
+      final isValid = await _conversionService.validateFile(file, extensions);
+      if (!isValid) continue;
+
+      _batchConversions.add(ConversionModel(
+        id: const Uuid().v4(),
+        type: type,
+        inputFile: file,
+        status: ConversionStatus.idle,
+        startTime: DateTime.now(),
+      ));
+    }
+  }
+
+  /// Convert all queued files (1 or many) — single entry point for every tool.
+  Future<void> convertAll(ConversionType type, {String quality = 'high'}) async {
+    await convertBatch(type, quality: quality);
+  }
+
+  /// Alias kept for existing call sites.
+  Future<void> convertFile(ConversionType type, {String quality = 'high'}) async {
+    await convertAll(type, quality: quality);
+  }
+
+  Future<void> convertBatch(ConversionType type, {String quality = 'high'}) async {
+    if (_batchConversions.isEmpty) {
+      _globalErrorMessage = 'No files selected. Please upload file(s) first.';
+      notifyListeners();
+      return;
+    }
+
+    if (type == ConversionType.mergePdf && _batchConversions.length < 2) {
+      _globalErrorMessage = 'Select at least 2 PDF files to merge.';
+      notifyListeners();
+      return;
+    }
+
+    if (_isProcessing) return;
+    _isProcessing = true;
+    _globalErrorMessage = null;
+    _loadingMessage = AppStrings.convertingFile;
+    notifyListeners();
+
+    try {
+      if (type == ConversionType.mergePdf) {
+        _loadingMessage = 'Merging ${_batchConversions.length} PDF files...';
+        notifyListeners();
+        await _mergeBatch(type);
+        return;
       }
 
-      _updateProgress(0.8);
-      await Future.delayed(const Duration(milliseconds: 300));
+      // When the user picks several images, treat the batch as a single
+      // multi-page PDF so the output matches what professional tools do.
+      if (type == ConversionType.imageToPdf && _batchConversions.length > 1) {
+        await _imagesToSinglePdf(type, quality: quality);
+        return;
+      }
 
-      // Update conversion with result
-      _currentConversion = _currentConversion!.copyWith(
+      final total = _batchConversions.length;
+      for (int i = 0; i < _batchConversions.length; i++) {
+        var conversion = _batchConversions[i];
+        final name = p.basename(conversion.inputFile.path);
+        _loadingMessage = '${AppStrings.convertingFile} (${i + 1}/$total)\n$name';
+        notifyListeners();
+
+        _batchConversions[i] = conversion.copyWith(
+          type: type,
+          status: ConversionStatus.converting,
+          progress: 0.05,
+          errorMessage: null,
+        );
+        notifyListeners();
+
+        try {
+          final outputFile = await _performConversion(
+            type,
+            conversion.inputFile,
+            quality: quality,
+            onProgress: (value, [msg]) {
+              final clamped = value.clamp(0.0, 1.0).toDouble();
+              _batchConversions[i] = _batchConversions[i].copyWith(
+                progress: clamped,
+              );
+              if (msg != null && msg.isNotEmpty) {
+                _loadingMessage =
+                    '${AppStrings.convertingFile} (${i + 1}/$total)\n$name\n$msg';
+              }
+              notifyListeners();
+            },
+          );
+
+          if (outputFile == null) {
+            throw Exception('Conversion produced no output file');
+          }
+
+          _batchConversions[i] = _batchConversions[i].copyWith(
+            outputFile: outputFile,
+            status: ConversionStatus.completed,
+            progress: 1.0,
+            endTime: DateTime.now(),
+          );
+
+          _conversionHistory.insert(0, _batchConversions[i]);
+          await _saveHistory();
+        } catch (e) {
+          _batchConversions[i] = _batchConversions[i].copyWith(
+            status: ConversionStatus.error,
+            errorMessage: _friendlyError(e),
+            endTime: DateTime.now(),
+          );
+        }
+        notifyListeners();
+      }
+    } finally {
+      _isProcessing = false;
+      _loadingMessage = null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _imagesToSinglePdf(
+    ConversionType type, {
+    required String quality,
+  }) async {
+    final files = _batchConversions.map((c) => c.inputFile).toList();
+    for (int i = 0; i < _batchConversions.length; i++) {
+      _batchConversions[i] = _batchConversions[i].copyWith(
+        type: type,
+        status: ConversionStatus.converting,
+        progress: 0.05,
+        errorMessage: null,
+      );
+    }
+    notifyListeners();
+
+    try {
+      final output = await _conversionService.imagesToPdf(
+        files,
+        quality: quality,
+        onProgress: (value, [msg]) {
+          final clamped = value.clamp(0.0, 1.0).toDouble();
+          for (int i = 0; i < _batchConversions.length; i++) {
+            _batchConversions[i] =
+                _batchConversions[i].copyWith(progress: clamped);
+          }
+          if (msg != null && msg.isNotEmpty) _loadingMessage = msg;
+          notifyListeners();
+        },
+      );
+      final merged = ConversionModel(
+        id: const Uuid().v4(),
+        type: type,
+        inputFile: files.first,
+        outputFile: output,
+        status: ConversionStatus.completed,
+        progress: 1.0,
+        startTime: DateTime.now(),
+        endTime: DateTime.now(),
+      );
+      _batchConversions
+        ..clear()
+        ..add(merged);
+      _conversionHistory.insert(0, merged);
+      await _saveHistory();
+    } catch (e) {
+      for (int i = 0; i < _batchConversions.length; i++) {
+        _batchConversions[i] = _batchConversions[i].copyWith(
+          status: ConversionStatus.error,
+          errorMessage: _friendlyError(e),
+          endTime: DateTime.now(),
+        );
+      }
+      _globalErrorMessage = _friendlyError(e);
+    }
+    notifyListeners();
+  }
+
+  String _friendlyError(Object e) {
+    final text = e.toString();
+    if (text.startsWith('Exception: ')) return text.substring(11);
+    return text;
+  }
+
+  Future<void> _mergeBatch(ConversionType type) async {
+    final pdfFiles = _batchConversions.map((c) => c.inputFile).toList();
+
+    for (int i = 0; i < _batchConversions.length; i++) {
+      _batchConversions[i] = _batchConversions[i].copyWith(
+        type: type,
+        status: ConversionStatus.converting,
+        progress: 0.05,
+      );
+    }
+    notifyListeners();
+
+    try {
+      final outputFile = await _conversionService.mergePdfs(
+        pdfFiles,
+        onProgress: (value, [msg]) {
+          final clamped = value.clamp(0.0, 1.0).toDouble();
+          for (int i = 0; i < _batchConversions.length; i++) {
+            _batchConversions[i] =
+                _batchConversions[i].copyWith(progress: clamped);
+          }
+          if (msg != null && msg.isNotEmpty) _loadingMessage = msg;
+          notifyListeners();
+        },
+      );
+
+      final merged = ConversionModel(
+        id: const Uuid().v4(),
+        type: type,
+        inputFile: pdfFiles.first,
         outputFile: outputFile,
         status: ConversionStatus.completed,
         progress: 1.0,
+        startTime: DateTime.now(),
         endTime: DateTime.now(),
       );
 
-      // Add to history
-      _conversionHistory.insert(0, _currentConversion!);
-      _saveHistory();
-      
-      notifyListeners();
+      _batchConversions
+        ..clear()
+        ..add(merged);
+
+      _conversionHistory.insert(0, merged);
+      await _saveHistory();
     } catch (e) {
-      _setError('Conversion failed: ${e.toString()}');
-    } finally {
-      _isProcessing = false;
+      for (int i = 0; i < _batchConversions.length; i++) {
+        _batchConversions[i] = _batchConversions[i].copyWith(
+          status: ConversionStatus.error,
+          errorMessage: _friendlyError(e),
+          endTime: DateTime.now(),
+        );
+      }
+      _globalErrorMessage = _friendlyError(e);
     }
+    _isProcessing = false;
+    _loadingMessage = null;
+    notifyListeners();
   }
 
-  /// Download the converted file
-  Future<void> downloadFile() async {
-    if (_currentConversion?.outputFile == null) {
-      _setError('No file to download');
-      return;
-    }
-
-    try {
-      final fileName = _currentConversion!.outputFileName ?? 'converted_file';
-      await _fileService.saveFile(_currentConversion!.outputFile!, fileName);
-    } catch (e) {
-      _setError('Failed to download file: ${e.toString()}');
-    }
-  }
-
-  /// Share the converted file
-  Future<void> shareFile() async {
-    if (_currentConversion?.outputFile == null) {
-      _setError('No file to share');
-      return;
-    }
-
-    try {
-      await _fileService.shareFile(_currentConversion!.outputFile!);
-    } catch (e) {
-      _setError('Failed to share file: ${e.toString()}');
-    }
-  }
-
-  /// Download a specific conversion model result
-  Future<void> downloadFileModel(ConversionModel model) async {
-    if (model.outputFile == null) return;
+  Future<bool> downloadFileModel(ConversionModel model) async {
+    if (model.outputFile == null) return false;
     try {
       final fileName = model.outputFileName ?? 'converted_file';
       await _fileService.saveFile(model.outputFile!, fileName);
+      return true;
     } catch (e) {
-      debugPrint('Failed to download individual file: $e');
+      debugPrint('Failed to download file: $e');
+      return false;
     }
   }
 
-  /// Open the converted file
-  Future<void> openFile() async {
-    if (_currentConversion?.outputFile == null) {
-      _setError('No file to open');
-      return;
-    }
-
+  Future<void> shareFileModel(ConversionModel model) async {
+    if (model.outputFile == null) return;
     try {
-      await _fileService.openFile(_currentConversion!.outputFile!);
+      await _fileService.shareFile(model.outputFile!);
     } catch (e) {
-      _setError('Failed to open file: ${e.toString()}');
+      debugPrint('Failed to share file: $e');
     }
   }
 
-  /// Reset the conversion state
+  Future<void> openFileModel(ConversionModel model) async {
+    if (model.outputFile == null) return;
+    try {
+      await _fileService.openFile(model.outputFile!);
+    } catch (e) {
+      debugPrint('Failed to open file: $e');
+    }
+  }
+
   void reset() {
-    _currentConversion = null;
+    _batchConversions.clear();
     _isProcessing = false;
+    _clearLoading();
+    _globalErrorMessage = null;
     notifyListeners();
   }
 
-  /// Remove a file from the current conversion
-  void removeFile() {
-    if (_currentConversion != null) {
-      _currentConversion = null;
-      notifyListeners();
-    }
-  }
-
-  /// Clear conversion history
-  void clearHistory() {
-    _conversionHistory.clear();
-    _saveHistory();
-    notifyListeners();
-  }
-
-  /// Remove a specific conversion from history
-  void removeFromHistory(String conversionId) {
-    _conversionHistory.removeWhere((c) => c.id == conversionId);
-    _saveHistory();
-    notifyListeners();
-  }
-
-  /// Update progress
-  void _updateProgress(double progress) {
-    if (_currentConversion != null) {
-      _currentConversion = _currentConversion!.copyWith(progress: progress);
-      notifyListeners();
-    }
-  }
-
-  /// Set error state
-  void _setError(String message) {
-    if (_currentConversion != null) {
-      _currentConversion = _currentConversion!.copyWith(
-        status: ConversionStatus.error,
-        errorMessage: message,
-        endTime: DateTime.now(),
-      );
-    }
-    _isProcessing = false;
-    notifyListeners();
-  }
-
-  /// Retry failed conversion
-  Future<void> retryConversion() async {
-    if (_currentConversion == null) return;
-    
-    final type = _currentConversion!.type;
-    _currentConversion = _currentConversion!.copyWith(
-      status: ConversionStatus.idle,
-      errorMessage: null,
-      progress: 0.0,
-    );
-    notifyListeners();
-    
-    await convertFile(type);
-  }
-
-  /// Select multiple files for batch conversion
-  Future<bool> selectFiles(List<String> extensions, ConversionType type) async {
-    try {
-      final files = await _fileService.pickFiles(extensions);
-      
-      if (files.isNotEmpty) {
-        _batchConversions.clear();
-
-        // If only one file is selected, treat it as a single conversion
-        if (files.length == 1) {
-          _currentConversion = ConversionModel(
-            id: const Uuid().v4(),
-            type: type,
-            inputFile: files.first,
-            status: ConversionStatus.idle,
-            startTime: DateTime.now(),
-          );
-          notifyListeners();
-          return true;
-        }
-
-        // Multiple files - use batch mode
-        _currentConversion = null;
-        for (var file in files) {
-          _batchConversions.add(ConversionModel(
-            id: const Uuid().v4(),
-            type: type,
-            inputFile: file,
-            status: ConversionStatus.idle,
-            startTime: DateTime.now(),
-          ));
-        }
-        notifyListeners();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      _setError('Failed to select files: ${e.toString()}');
-      return false;
-    }
-  }
-
-  /// Add more files to the current batch
-  Future<void> addMoreFiles(List<String> extensions, ConversionType type) async {
-    try {
-      // If there's a single conversion already, move it to batch
-      if (_currentConversion != null) {
-        final exists = _batchConversions.any((c) => c.inputFile.path == _currentConversion!.inputFile.path);
-        if (!exists) {
-          _batchConversions.add(_currentConversion!);
-        }
-        _currentConversion = null;
-      }
-
-      final files = await _fileService.pickFiles(extensions);
-      
-      if (files.isNotEmpty) {
-        for (var file in files) {
-          // Check if file is already in batch
-          final exists = _batchConversions.any((c) => c.inputFile.path == file.path);
-          if (!exists) {
-            _batchConversions.add(ConversionModel(
-              id: const Uuid().v4(),
-              type: type,
-              inputFile: file,
-              status: ConversionStatus.idle,
-              startTime: DateTime.now(),
-            ));
-          }
-        }
-        notifyListeners();
-      }
-    } catch (e) {
-      _setError('Failed to add more files: ${e.toString()}');
-    }
-  }
-
-  /// Remove a file from the batch
   void removeFromBatch(int index) {
     if (index >= 0 && index < _batchConversions.length) {
       _batchConversions.removeAt(index);
@@ -365,138 +460,94 @@ class ConversionProvider extends ChangeNotifier {
     }
   }
 
-  /// Convert multiple files in a batch
-  Future<void> convertBatch(ConversionType type, {String quality = 'high'}) async {
-    if (_batchConversions.isEmpty) {
-      _setError('No files selected for batch conversion');
-      return;
-    }
-
-    if (_isProcessing) return;
-    _isProcessing = true;
+  void clearHistory() {
+    _conversionHistory.clear();
+    _saveHistory();
     notifyListeners();
-
-    try {
-      // Handle Merge PDF specially (merge all into one)
-      if (type == ConversionType.mergePdf) {
-        final pdfFiles = _batchConversions.map((c) => c.inputFile).toList();
-        final outputFile = await _conversionService.mergePdfs(pdfFiles);
-        
-        // Mark all as completed with the same output file?
-        // Or create a new "Result" model. For now, mark them all.
-        for (int i = 0; i < _batchConversions.length; i++) {
-          _batchConversions[i] = _batchConversions[i].copyWith(
-            outputFile: outputFile,
-            status: ConversionStatus.completed,
-            progress: 1.0,
-            endTime: DateTime.now(),
-          );
-        }
-        notifyListeners();
-        return;
-      }
-
-      for (int i = 0; i < _batchConversions.length; i++) {
-        var conversion = _batchConversions[i];
-        
-        // Update status to converting
-        _batchConversions[i] = conversion.copyWith(
-          type: type,
-          status: ConversionStatus.converting,
-          progress: 0.1,
-        );
-        notifyListeners();
-
-        try {
-          // Perform conversion
-          final outputFile = await _performConversion(
-            type, 
-            conversion.inputFile,
-            quality: quality,
-          );
-          
-          // Update status to completed
-          _batchConversions[i] = _batchConversions[i].copyWith(
-            outputFile: outputFile,
-            status: ConversionStatus.completed,
-            progress: 1.0,
-            endTime: DateTime.now(),
-          );
-          
-          // Add to history
-          _conversionHistory.insert(0, _batchConversions[i]);
-          _saveHistory();
-        } catch (e) {
-          // Update status to error
-          _batchConversions[i] = _batchConversions[i].copyWith(
-            status: ConversionStatus.error,
-            errorMessage: e.toString(),
-            endTime: DateTime.now(),
-          );
-        }
-        notifyListeners();
-      }
-    } finally {
-      _isProcessing = false;
-      notifyListeners();
-    }
   }
 
-  /// Helper to perform actual conversion logic
+  void removeFromHistory(String conversionId) {
+    _conversionHistory.removeWhere((c) => c.id == conversionId);
+    _saveHistory();
+    notifyListeners();
+  }
+
+  Future<void> retryFailed(ConversionType type, {String quality = 'high'}) async {
+    for (int i = 0; i < _batchConversions.length; i++) {
+      if (_batchConversions[i].status == ConversionStatus.error) {
+        _batchConversions[i] = _batchConversions[i].copyWith(
+          status: ConversionStatus.idle,
+          errorMessage: null,
+          progress: 0.0,
+          outputFile: null,
+        );
+      }
+    }
+    notifyListeners();
+    await convertAll(type, quality: quality);
+  }
+
   Future<File?> _performConversion(
-    ConversionType type, 
+    ConversionType type,
     File inputFile, {
     String quality = 'high',
+    ConversionProgress? onProgress,
   }) async {
     switch (type) {
       case ConversionType.pdfToWord:
-        return await _conversionService.pdfToWord(inputFile);
+        return _conversionService.pdfToWord(inputFile, onProgress: onProgress);
       case ConversionType.pdfToExcel:
-        return await _conversionService.pdfToExcel(inputFile);
+        return _conversionService.pdfToExcel(inputFile, onProgress: onProgress);
       case ConversionType.pdfToImage:
-        return await _conversionService.pdfToImage(
-          inputFile, 
+        return _conversionService.pdfToImage(
+          inputFile,
           ImageFormat.png,
           quality: quality,
+          onProgress: onProgress,
         );
       case ConversionType.pdfToText:
-        return await _conversionService.pdfToText(inputFile);
+        return _conversionService.pdfToText(inputFile, onProgress: onProgress);
       case ConversionType.imageToPdf:
-        return await _conversionService.imageToPdf(
+        return _conversionService.imageToPdf(
           inputFile,
           quality: quality,
+          onProgress: onProgress,
         );
       case ConversionType.wordToPdf:
-        return await _conversionService.wordToPdf(inputFile);
+        return _conversionService.wordToPdf(inputFile, onProgress: onProgress);
       case ConversionType.textToPdf:
-        return await _conversionService.textToPdf(inputFile);
+        return _conversionService.textToPdf(inputFile, onProgress: onProgress);
       case ConversionType.pdfToPowerPoint:
-        return await _conversionService.pdfToPowerPoint(inputFile);
+        return _conversionService.pdfToPowerPoint(
+          inputFile,
+          onProgress: onProgress,
+        );
       case ConversionType.pdfToHtml:
-        return await _conversionService.pdfToHtml(inputFile);
+        return _conversionService.pdfToHtml(inputFile, onProgress: onProgress);
       case ConversionType.pdfToEpub:
-        return await _conversionService.pdfToEpub(inputFile);
+        return _conversionService.pdfToEpub(inputFile, onProgress: onProgress);
       case ConversionType.excelToPdf:
-        return await _conversionService.excelToPdf(inputFile);
+        return _conversionService.excelToPdf(
+          inputFile,
+          onProgress: onProgress,
+        );
       case ConversionType.powerPointToPdf:
-        return await _conversionService.powerPointToPdf(inputFile);
+        return _conversionService.powerPointToPdf(
+          inputFile,
+          onProgress: onProgress,
+        );
       case ConversionType.mergePdf:
-        // Merge is handled separately in convertBatch, but for single file it's just the file itself
-        return inputFile;
-      default:
-        throw UnimplementedError('Conversion for ${type.displayName} not implemented yet');
+        throw Exception('Merge PDF requires at least 2 files in the queue.');
     }
   }
 
   @override
   void dispose() {
-    _currentConversion = null;
     _batchConversions.clear();
     _conversionHistory.clear();
     super.dispose();
   }
 
-  /// Load history from storage
   Future<void> _loadHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -514,7 +565,6 @@ class ConversionProvider extends ChangeNotifier {
     }
   }
 
-  /// Save history to storage
   Future<void> _saveHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();

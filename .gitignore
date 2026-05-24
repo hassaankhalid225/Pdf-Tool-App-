@@ -77,3 +77,4 @@ app.*.map.json
 
 # Web
 **/web/.dart_tool/
+/Skills/

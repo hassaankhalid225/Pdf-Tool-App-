@@ -67,6 +67,8 @@ class AppStrings {
   
   // Status Messages
   static const String uploadingFile = 'Uploading file...';
+  static const String preparingFiles = 'Preparing your files...';
+  static const String validatingFiles = 'Validating selected files...';
   static const String convertingFile = 'Converting file...';
   static const String conversionComplete = 'Conversion completed successfully!';
   static const String conversionFailed = 'Conversion failed';

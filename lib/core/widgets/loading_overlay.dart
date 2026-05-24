@@ -1,22 +1,26 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:pdf_tool/core/constants/app_dimensions.dart';
 import 'package:pdf_tool/core/constants/app_colors.dart';
 
-/// Loading overlay widget that can be shown over any content
+/// Modern loading overlay used over conversion screens.
+///
+/// * Soft blurred backdrop (Material 3 scrim feel).
+/// * Compact card with gradient progress indicator and optional message.
+/// * Pointer events are absorbed while shown so the underlying UI cannot
+///   be interacted with mid-conversion.
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;
   final String? message;
-  final Color? backgroundColor;
-  final Color? indicatorColor;
+  final double? progress;
 
   const LoadingOverlay({
     super.key,
     required this.isLoading,
     required this.child,
     this.message,
-    this.backgroundColor,
-    this.indicatorColor,
+    this.progress,
   });
 
   @override
@@ -26,111 +30,105 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Positioned.fill(
-            child: Container(
-              color: backgroundColor ??
-                  Colors.black.withOpacity(0.5),
-              child: Center(
-                child: _buildLoadingContent(context),
-              ),
-            ),
+            child: _LoadingScrim(message: message, progress: progress),
           ),
       ],
     );
   }
-
-  Widget _buildLoadingContent(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingLg),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              indicatorColor ?? Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          if (message != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              message!,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 }
 
-/// Full screen loading indicator
-class FullScreenLoading extends StatelessWidget {
+class _LoadingScrim extends StatelessWidget {
   final String? message;
-  final Color? backgroundColor;
+  final double? progress;
 
-  const FullScreenLoading({
-    super.key,
-    this.message,
-    this.backgroundColor,
-  });
+  const _LoadingScrim({required this.message, required this.progress});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(),
-            if (message != null) ...[
-              const SizedBox(height: AppDimensions.spacingLg),
-              Text(
-                message!,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.surfaceDark : Colors.white;
+    final textColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final muted = textColor.withValues(alpha: 0.65);
+
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: Container(
+        color: Colors.black.withValues(alpha: isDark ? 0.55 : 0.35),
+        alignment: Alignment.center,
+        child: AbsorbPointer(
+          absorbing: true,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
               ),
-            ],
-          ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _GradientRing(progress: progress),
+                  const SizedBox(height: 18),
+                  Text(
+                    message ?? 'Working on it…',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (progress != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${(progress!.clamp(0, 1) * 100).round()}%',
+                      style: TextStyle(
+                        color: muted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Shimmer loading effect for placeholders
-class ShimmerLoading extends StatefulWidget {
-  final Widget child;
-  final bool isLoading;
-  final Color? baseColor;
-  final Color? highlightColor;
+class _GradientRing extends StatefulWidget {
+  final double? progress;
 
-  const ShimmerLoading({
-    super.key,
-    required this.child,
-    required this.isLoading,
-    this.baseColor,
-    this.highlightColor,
-  });
+  const _GradientRing({required this.progress});
 
   @override
-  State<ShimmerLoading> createState() => _ShimmerLoadingState();
+  State<_GradientRing> createState() => _GradientRingState();
 }
 
-class _ShimmerLoadingState extends State<ShimmerLoading>
+class _GradientRingState extends State<_GradientRing>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1100),
     )..repeat();
   }
 
@@ -142,117 +140,67 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isLoading) {
-      return widget.child;
-    }
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = widget.baseColor ??
-        (isDark ? AppColors.shimmerBaseDark : AppColors.shimmerBaseLight);
-    final highlightColor = widget.highlightColor ??
-        (isDark
-            ? AppColors.shimmerHighlightDark
-            : AppColors.shimmerHighlightLight);
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return ShaderMask(
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                baseColor,
-                highlightColor,
-                baseColor,
-              ],
-              stops: [
-                _controller.value - 0.3,
-                _controller.value,
-                _controller.value + 0.3,
-              ].map((e) => e.clamp(0.0, 1.0)).toList(),
-            ).createShader(bounds);
-          },
-          child: widget.child,
-        );
-      },
-    );
-  }
-}
-
-/// Skeleton loader for list items
-class SkeletonLoader extends StatelessWidget {
-  final double height;
-  final double? width;
-  final BorderRadius? borderRadius;
-
-  const SkeletonLoader({
-    super.key,
-    required this.height,
-    this.width,
-    this.borderRadius,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return ShimmerLoading(
-      isLoading: true,
-      child: Container(
-        height: height,
-        width: width,
-        decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.shimmerBaseDark
-              : AppColors.shimmerBaseLight,
-          borderRadius: borderRadius ??
-              BorderRadius.circular(AppDimensions.radiusSmall),
-        ),
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Transform.rotate(
+            angle: _controller.value * 2 * 3.1415926,
+            child: CustomPaint(
+              painter: _RingPainter(progress: widget.progress),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-/// Loading button state
-class LoadingButton extends StatelessWidget {
-  final String text;
-  final bool isLoading;
-  final VoidCallback? onPressed;
-  final IconData? icon;
+class _RingPainter extends CustomPainter {
+  final double? progress;
 
-  const LoadingButton({
-    super.key,
-    required this.text,
-    required this.isLoading,
-    this.onPressed,
-    this.icon,
-  });
+  _RingPainter({required this.progress});
 
   @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: AppDimensions.iconSm),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                ],
-                Text(text),
-              ],
-            ),
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final strokeWidth = 4.5;
+
+    final track = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.16)
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+    canvas.drawArc(
+      rect.deflate(strokeWidth / 2),
+      0,
+      6.283185,
+      false,
+      track,
+    );
+
+    final sweep = (progress?.clamp(0, 1).toDouble() ?? 0.35) * 6.283185;
+    if (sweep <= 0) return;
+
+    final fg = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+      ).createShader(rect)
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawArc(
+      rect.deflate(strokeWidth / 2),
+      -1.5707,
+      sweep,
+      false,
+      fg,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter old) =>
+      old.progress != progress;
 }
