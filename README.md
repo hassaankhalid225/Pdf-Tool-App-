@@ -88,9 +88,9 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
       <td align="center"><b>Conversion Queue</b></td>
     </tr>
     <tr>
-      <td><img src="assets/screenshots/home.png" width="240" alt="Home Screen" /></td>
-      <td><img src="assets/screenshots/favorites.png" width="240" alt="Favorites Screen" /></td>
-      <td><img src="assets/screenshots/conversion.png" width="240" alt="Conversion Screen" /></td>
+      <td><img src="assets/screenshots/1.jpeg" width="240" alt="Home Screen" /></td>
+      <td><img src="assets/screenshots/2.jpeg" width="240" alt="Favorites Screen" /></td>
+      <td><img src="assets/screenshots/4.jpeg" width="240" alt="Conversion Screen" /></td>
     </tr>
     <tr>
       <td align="center"><b>Files / History</b></td>
@@ -98,9 +98,9 @@ A premium, privacy-first, cross-platform Flutter application for converting and 
       <td align="center"><b>Dark Mode</b></td>
     </tr>
     <tr>
-      <td><img src="assets/screenshots/history.png" width="240" alt="History Screen" /></td>
-      <td><img src="assets/screenshots/settings.png" width="240" alt="Settings Screen" /></td>
-      <td><img src="assets/screenshots/dark_mode.png" width="240" alt="Dark Mode" /></td>
+      <td><img src="assets/screenshots/3.jpeg" width="240" alt="History Screen" /></td>
+      <td><img src="assets/screenshots/5.jpeg" width="240" alt="Settings Screen" /></td>
+      <td><img src="assets/screenshots/6.jpeg" width="240" alt="Dark Mode" /></td>
     </tr>
   </table>
 </p>
