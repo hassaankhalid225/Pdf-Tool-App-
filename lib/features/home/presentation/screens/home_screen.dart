@@ -271,13 +271,15 @@ class _HeroHeader extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(12),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/app_icon.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                child: const Icon(Icons.picture_as_pdf_rounded,
-                    color: Colors.white, size: 22),
               ),
               const SizedBox(width: 12),
               const Text(

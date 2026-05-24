@@ -389,13 +389,11 @@ class _Hero extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.picture_as_pdf_rounded,
-              color: Colors.white,
-              size: 30,
+              image: const DecorationImage(
+                image: AssetImage('assets/images/app_icon.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(width: 16),
